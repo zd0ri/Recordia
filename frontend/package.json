@@ -15,6 +15,7 @@
     "@mui/material": "^9.3.1",
     "@mui/x-data-grid": "^9.13.0",
     "axios": "^1.19.0",
+    "cloudinary": "^2.11.0",
     "countries-list": "^3.4.1",
     "react": "^19.2.8",
     "react-bootstrap": "^2.10.10",
