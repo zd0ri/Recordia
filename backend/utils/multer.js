@@ -7,9 +7,7 @@ module.exports = multer({
     fileFilter: (req, file, cb) => {
         let ext = path.extname(file.originalname).toLowerCase();
         if (ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png") {
-            // cb(new Error("Unsupported file type!"), false);
-            console.log("Unsupported file type!")
-            return;
+            return cb(new Error("Only jpg, jpeg, png allowed"), false);
         }
         cb(null, true);
     },

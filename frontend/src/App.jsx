@@ -1,202 +1,90 @@
-import { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ToastContainer, } from 'react-toastify';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
+import { Box, Button, Container, Paper, Stack, Typography } from '@mui/material';
+import { Link as RouterLink, Route, Routes } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
+import Users from './pages/admin/Users';
+import Products from './pages/admin/Products';
+import ProductForm from './pages/admin/ProductForm';
+import Genres from './pages/admin/Genres';
+import Artists from './pages/admin/Artists';
+import AdminLayout from './components/AdminLayout';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
+import MyOrders from './pages/MyOrders';
+import OrderDetails from './pages/OrderDetails';
+import Home from './pages/Home';
+import ProductDetails from './pages/ProductDetails';
+import AdminOrders from './pages/admin/Orders';
+import AdminOrderDetail from './pages/admin/OrderDetail';
+import AdminReviews from './pages/admin/Reviews';
+import Dashboard from './pages/admin/Dashboard';
 
-import { Header } from './Components/Layout/Header'
-import Footer from './Components/Layout/Footer'
-
-import './App.css'
-import Home from './Components/Home'
-import ProductDetails from './Components/Product/ProductDetails';
-import Login from './Components/User/Login';
-import Register from './Components/User/Register';
-import ForgotPassword from './Components/User/ForgotPassword';
-import NewPassword from './Components/User/NewPassword';
-import Profile from './Components/User/Profile';
-import UpdateProfile from './Components/User/UpdateProfile';
-import UpdatePassword from './Components/User/UpdatePassword';
-import Cart from './Components/Cart/Cart';
-import Shipping from './Components/Cart/Shipping';
-import ConfirmOrder from './Components/Cart/ConfirmOrder';
-import Payment from './Components/Cart/Payment';
-import OrderSuccess from './Components/Cart/OrderSuccess';
-import ListOrders from './Components/Order/ListOrders';
-import OrderDetails from './Components/Order/OrderDetails';
-
-import Dashboard from './Components/Admin/Dashboard';
-import ProductsList from './Components/Admin/ProductsList';
-import NewProduct from './Components/Admin/NewProduct';
-import UpdateProduct from './Components/Admin/UpdateProduct';
-import OrdersList from './Components/Admin/OrdersList';
-import ProcessOrder from './Components/Admin/ProcessOrder';
-import UsersList from './Components/Admin/UsersList';
-import UpdateUser from './Components/Admin/UpdateUser';
-import ProtectedRoute from './Components/Route/ProtectedRoute';
-function App() {
-
-  const [state, setState] = useState({
-    cartItems: localStorage.getItem('cartItems')
-      ? JSON.parse(localStorage.getItem('cartItems'))
-      : [],
-
-    shippingInfo: localStorage.getItem('shippingInfo')
-      ? JSON.parse(localStorage.getItem('shippingInfo'))
-      : {},
-  })
-
-  const addItemToCart = async (id, quantity) => {
-    console.log(id, quantity)
-    try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API}/product/${id}`)
-      console.log(data)
-
-      const item = {
-        product: data.product._id,
-        name: data.product.name,
-        price: data.product.price,
-        image: data.product.images[0].url ? data.product.images[0].url : '',
-        stock: data.product.stock,
-        quantity: quantity
-      }
-      console.log(item)
-
-      const isItemExist = state.cartItems.find(i => i.product === item.product)
-
-
-      if (isItemExist) {
-        setState({
-          ...state,
-          cartItems: state.cartItems.map(i => i.product === isItemExist.product ? item : i)
-        })
-      }
-      else {
-        setState({
-          ...state,
-          cartItems: [...state.cartItems, item]
-        })
-      }
-
-      toast.success('Item Added to Cart', {
-        position: 'bottom-right'
-      })
-
-
-
-    } catch (error) {
-      toast.error(error, {
-        position: 'top-left'
-      });
-
-    }
-
-  }
-
-  const removeItemFromCart = async (id) => {
-    setState({
-      ...state,
-      cartItems: state.cartItems.filter(i => i.product !== id)
-    })
-    localStorage.setItem('cartItems', JSON.stringify(state.cartItems))
-  }
-
-  const saveShippingInfo = async (data) => {
-    setState({
-      ...state,
-      shippingInfo: data
-    })
-    localStorage.setItem('shippingInfo', JSON.stringify(data))
-  }
-
-
-  return (
-    <>
-
-      <Router>
-        <Header cartItems={state.cartItems} />
-        <Routes>
-          <Route path="/" element={<Home />} exact="true" />
-          <Route path="/product/:id" element={<ProductDetails cartItems={state.cartItems} addItemToCart={addItemToCart} />} exact="true" />
-          <Route path="/search/:keyword" element={<Home />} exact="true" />
-          <Route path="/login" element={<Login />} exact="true" />
-          <Route path="/register" element={<Register exact="true" />} />
-          <Route path="/password/forgot" element={<ForgotPassword />} exact="true" />
-          <Route path="/password/reset/:token" element={<NewPassword />} exact="true" />
-          <Route path="/me" element={<Profile />} exact="true" />
-          <Route path="/me/update" element={<UpdateProfile />} exact="true"
-          />
-          <Route path="/password/update" element={<UpdatePassword />} />
-          <Route path="/cart" element={<Cart cartItems={state.cartItems} addItemToCart={addItemToCart} removeItemFromCart={removeItemFromCart} />} exact="true" />
-          <Route path="/shipping" element={<Shipping shipping={state.shippingInfo} saveShippingInfo={saveShippingInfo} />} />
-          <Route path="/confirm" element={<ConfirmOrder cartItems={state.cartItems} shippingInfo={state.shippingInfo} />} />
-          <Route path="/payment" element={<Payment cartItems={state.cartItems} shippingInfo={state.shippingInfo} />} />
-          <Route path="/success" element={<OrderSuccess />} />
-          <Route path="/orders/me" element={<ListOrders />} />
-          <Route path="/order/:id" element={<OrderDetails />} />
-
-          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
-          {/* <Route path="/admin/products" element={<ProductsList />} /> */}
-          <Route path="/admin/product" element={<NewProduct />} />
-          <Route
-            path="/admin/product/:id"
-            element={<UpdateProduct />} />
-          {/* <Route
-            path="/admin/orders"
-            element={<OrdersList />}
-
-          /> */}
-          <Route
-            path="/admin/order/:id"
-            element={<ProcessOrder />} />
-          {/* <Route
-            path="/admin/users"
-            element={<UsersList />} /> */}
-          <Route path="/admin/user/:id" element={<UpdateUser />} />
-
-          <Route
-            path="/admin/products"
-            element={
-              <ProtectedRoute isAdmin={true}>
-                <ProductsList />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute isAdmin={true}>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/admin/users"
-            element={
-              <ProtectedRoute isAdmin={true}>
-                <UsersList />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/admin/orders"
-            element={
-              <ProtectedRoute isAdmin={true}>
-                <OrdersList />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-
-
-      </Router>
-      <Footer />
-      <ToastContainer />
-    </>
-  )
+function AdminPlaceholder({ title }) {
+  return <Page title={title} description={`${title} management will be built here.`} />;
 }
 
-export default App
+function NotFound() {
+  return (
+    <Page title="Page not found" description="The record you are looking for is not in this collection.">
+      <Button component={RouterLink} to="/" variant="contained">Return home</Button>
+    </Page>
+  );
+}
+
+function Page({ title, description, children }) {
+  return (
+    <Paper sx={{ p: { xs: 3, md: 6 }, textAlign: 'center' }}>
+      <Stack alignItems="center" spacing={2}>
+        <Typography variant="h2">{title}</Typography>
+        <Typography color="text.secondary">{description}</Typography>
+        {children}
+      </Stack>
+    </Paper>
+  );
+}
+
+export default function App() {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Navbar />
+      <Container component="main" maxWidth="lg" sx={{ flex: 1, py: { xs: 4, md: 8 } }}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/products/:id" element={<ProductDetails />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-success/:id" element={<OrderSuccess />} />
+            <Route path="/orders" element={<MyOrders />} />
+            <Route path="/orders/:id" element={<OrderDetails />} />
+            <Route element={<AdminRoute />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin/dashboard" element={<Dashboard />} />
+                <Route path="/admin/users" element={<Users />} />
+                <Route path="/admin/products" element={<Products />} />
+                <Route path="/admin/products/new" element={<ProductForm />} />
+                <Route path="/admin/products/:id/edit" element={<ProductForm />} />
+                <Route path="/admin/genres" element={<Genres />} />
+                <Route path="/admin/artists" element={<Artists />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/orders/:id" element={<AdminOrderDetail />} />
+                <Route path="/admin/reviews" element={<AdminReviews />} />
+              </Route>
+            </Route>
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Container>
+      <Footer />
+    </Box>
+  );
+}

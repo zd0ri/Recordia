@@ -1,63 +1,77 @@
-product = require("../models/product");
 class APIFeatures {
     constructor(query, queryStr) {
         this.query = query;
         this.queryStr = queryStr;
+        this.filters = {};
+        this.page = 1;
+        this.resPerPage = 10;
     }
 
     search() {
-        // http://localhost:5173?keyword=apple
-        const keyword = this.queryStr.keyword ? {
-            name: {
-                $regex: this.queryStr.keyword,
-                $options: 'i'
-            }
-        } : {}
+        if (this.queryStr.keyword) {
+            const escapedKeyword = this.queryStr.keyword.replace(
+                /[.*+?^${}()|[\]\\]/g,
+                '\\$&'
+            );
 
-        console.log(this.query, this.queryStr);
-        this.query = this.query.find({ ...keyword });
+            this.filters.album_title = {
+                $regex: escapedKeyword,
+                $options: 'i'
+            };
+        }
+
+        this.query = this.query.find(this.filters);
         return this;
     }
 
     filter() {
-        // { 'price[gte]': '100', 'price[lte]': '1000' }
-        const queryCopy = { ...this.queryStr };
-        // console.log(queryCopy);
-        // Removing fields from the query
-        const removeFields = ['keyword', 'page']
-        removeFields.forEach(el => delete queryCopy[el]);
+        const priceFilter = {};
 
-        let priceFilter = {};
-        if (queryCopy['price[gte]'] || queryCopy['price[lte]']) {
-            priceFilter.price = {};
-            if (queryCopy['price[gte]']) {
-                priceFilter.price.$gte = Number(queryCopy['price[gte]']);
-            }
-            if (queryCopy['price[lte]']) {
-                priceFilter.price.$lte = Number(queryCopy['price[lte]']);
-            }
-            // priceFilter {
-            //     price: {
-            //         $gte: 100,
-            //         $lte: 1000
-            //     }
-            // }
-            delete queryCopy['price[gte]'];
-            delete queryCopy['price[lte]'];
+        if (this.queryStr['price[gte]'] !== undefined) {
+            priceFilter.$gte = Number(this.queryStr['price[gte]']);
         }
 
-        console.log(queryCopy);
+        if (this.queryStr['price[lte]'] !== undefined) {
+            priceFilter.$lte = Number(this.queryStr['price[lte]']);
+        }
 
-        this.query = this.query.find(priceFilter);
+        if (Object.keys(priceFilter).length > 0) {
+            this.filters.price = priceFilter;
+        }
+
+        if (this.queryStr.genre) {
+            this.filters.genre = this.queryStr.genre;
+        }
+
+        if (this.queryStr.artist) {
+            this.filters.artist = this.queryStr.artist;
+        }
+
+        if (this.queryStr['ratings[gte]'] !== undefined) {
+            this.filters.ratings = {
+                $gte: Number(this.queryStr['ratings[gte]'])
+            };
+        }
+
+        this.query = this.query.find(this.filters);
         return this;
     }
 
-    pagination(resPerPage) {
-        const currentPage = Number(this.queryStr.page) || 1;
-        const skip = resPerPage * (currentPage - 1);
+    pagination(defaultLimit = 10) {
+        const requestedLimit = Number(this.queryStr.limit);
+        this.resPerPage = requestedLimit > 0 ? requestedLimit : defaultLimit;
+        this.page = Number(this.queryStr.page) > 0
+            ? Number(this.queryStr.page)
+            : 1;
 
-        this.query = this.query.limit(resPerPage).skip(skip);
+        const skip = this.resPerPage * (this.page - 1);
+        this.query = this.query.limit(this.resPerPage).skip(skip);
         return this;
+    }
+
+    getFilters() {
+        return this.filters;
     }
 }
-module.exports = APIFeatures
+
+module.exports = APIFeatures;

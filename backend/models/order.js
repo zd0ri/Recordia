@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const orderSchema = mongoose.Schema({
     shippingInfo: {
@@ -54,41 +54,48 @@ const orderSchema = mongoose.Schema({
         }
     ],
     paymentInfo: {
-        id: {
-            type: String
+        method: {
+            type: String,
+            enum: ['GCash', 'COD']
         },
         status: {
+            type: String
+        },
+        id: {
             type: String
         }
     },
     paidAt: {
         type: Date
     },
-
     itemsPrice: {
         type: Number,
         required: true,
-        default: 0.0
+        default: 0
     },
     taxPrice: {
         type: Number,
         required: true,
-        default: 0.0
+        default: 0
     },
     shippingPrice: {
         type: Number,
         required: true,
-        default: 0.0
+        default: 0
     },
     totalPrice: {
         type: Number,
         required: true,
-        default: 0.0
+        default: 0
     },
     orderStatus: {
         type: String,
-        required: true,
-        default: 'Processing'
+        enum: ['Pending', 'Cancelled', 'Processing', 'Shipped', 'Completed'],
+        default: 'Pending'
+    },
+    stockDeducted: {
+        type: Boolean,
+        default: false
     },
     deliveredAt: {
         type: Date
@@ -97,7 +104,6 @@ const orderSchema = mongoose.Schema({
         type: Date,
         default: Date.now
     }
+});
 
-})
-
-module.exports = mongoose.model('Order', orderSchema)
+module.exports = mongoose.model('Order', orderSchema);

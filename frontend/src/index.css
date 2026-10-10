@@ -2,8 +2,6 @@ body {
   margin: 0;
   min-width: 320px;
   background: #f5efdf;
-  color: #2e2923;
-  font-family: 'Courier New', Courier, monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -16,11 +14,9 @@ code {
   box-sizing: border-box;
 }
 
-a {
-  color: #6d3d2c;
-}
-
-a:hover {
-  color: #a35d39;
-  text-decoration: none;
+input {
+  border: 1px solid rgba(83, 62, 39, 0.24);
+  border-radius: 3px;
+  font: inherit;
+  padding: 0.75rem 1rem;
 }

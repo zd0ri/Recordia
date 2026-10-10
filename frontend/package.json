@@ -12,11 +12,14 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/material": "^9.3.1",
+    "@mui/icons-material": "^7.3.1",
+    "@mui/material": "^7.3.11",
     "@mui/x-data-grid": "^9.13.0",
     "axios": "^1.19.0",
     "cloudinary": "^2.11.0",
     "countries-list": "^3.4.1",
+    "firebase": "^13.0.0",
+    "formik": "^2.4.6",
     "react": "^19.2.8",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.8",
@@ -24,7 +27,8 @@
     "react-router-dom": "^7.18.2",
     "react-toastify": "^11.1.0",
     "recharts": "^3.10.1",
-    "sweetalert2": "^11.26.25"
+    "sweetalert2": "^11.26.25",
+    "yup": "^1.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
