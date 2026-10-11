@@ -25,10 +25,6 @@ import AdminOrderDetail from './pages/admin/OrderDetail';
 import AdminReviews from './pages/admin/Reviews';
 import Dashboard from './pages/admin/Dashboard';
 
-function AdminPlaceholder({ title }) {
-  return <Page title={title} description={`${title} management will be built here.`} />;
-}
-
 function NotFound() {
   return (
     <Page title="Page not found" description="The record you are looking for is not in this collection.">

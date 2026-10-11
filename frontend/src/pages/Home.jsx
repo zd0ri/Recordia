@@ -155,7 +155,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [filterKey, filters.mode, filters.page]);
+  }, [filterKey, filters.mode, filters.page, filters.artist, filters.genre, filters.keyword, filters.price, filters.rating]);
 
   useEffect(() => {
     if (filters.mode !== 'infinite' || !sentinelRef.current || loading || loadingMore || filters.page >= totalPages) {

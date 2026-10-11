@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { Alert, Snackbar } from '@mui/material';
 
+/* eslint-disable react-refresh/only-export-components */
 const SnackbarContext = createContext(null);
 
 export function SnackbarProvider({ children }) {
@@ -37,8 +38,10 @@ export function SnackbarProvider({ children }) {
   );
 }
 
-export function useSnackbar() {
+function useSnackbar() {
   const context = useContext(SnackbarContext);
   if (!context) throw new Error('useSnackbar must be used within a SnackbarProvider');
   return context;
 }
+
+export { useSnackbar };

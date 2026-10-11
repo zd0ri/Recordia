@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
+/* eslint-disable react-refresh/only-export-components */
 const CartContext = createContext(null);
 const storageKey = 'recordia_cart';
 
@@ -69,8 +70,10 @@ export function CartProvider({ children }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-export function useCart() {
+function useCart() {
   const context = useContext(CartContext);
   if (!context) throw new Error('useCart must be used within CartProvider');
   return context;
 }
+
+export { useCart };

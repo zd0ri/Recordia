@@ -35,6 +35,8 @@ export default function Genres() {
   };
 
   useEffect(() => {
+    // The async loader updates state after the request completes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadGenres();
   }, []);
 

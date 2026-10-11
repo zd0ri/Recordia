@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -26,13 +26,10 @@ const passwordSchema = Yup.object({
 
 export default function Profile() {
   const { user, updateProfile, changePassword } = useAuth();
-  const [preview, setPreview] = useState(user?.avatar?.url || '');
+  const [selectedPreview, setSelectedPreview] = useState('');
+  const preview = selectedPreview || user?.avatar?.url || '';
   const [profileMessage, setProfileMessage] = useState('');
   const [passwordMessage, setPasswordMessage] = useState('');
-
-  useEffect(() => {
-    setPreview(user?.avatar?.url || '');
-  }, [user]);
 
   return (
     <Stack spacing={3} sx={{ maxWidth: 680, mx: 'auto' }}>
@@ -74,7 +71,7 @@ export default function Profile() {
                         const file = event.currentTarget.files?.[0];
                         if (file) {
                           setFieldValue('avatar', file);
-                          setPreview(URL.createObjectURL(file));
+                          setSelectedPreview(URL.createObjectURL(file));
                         }
                       }}
                     />

@@ -36,6 +36,8 @@ export default function Artists() {
   };
 
   useEffect(() => {
+    // The async loader updates state after the request completes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadArtists();
   }, []);
 

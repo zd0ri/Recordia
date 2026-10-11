@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api from '../api/axios';
 import { useSnackbar } from './SnackbarContext';
 
+/* eslint-disable react-refresh/only-export-components */
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -20,7 +21,7 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await api.get('/me');
         setUser(data.user);
-      } catch (error) {
+      } catch {
         localStorage.removeItem('recordia_token');
         setToken(null);
         setUser(null);
@@ -32,7 +33,7 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [token]);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       const { data } = await api.post('/login', { email, password });
       localStorage.setItem('recordia_token', data.token);
@@ -44,9 +45,9 @@ export function AuthProvider({ children }) {
       showError(error.response?.data?.message || 'Login failed.');
       throw error;
     }
-  };
+  }, [showError, showSuccess]);
 
-  const firebaseLogin = async (idToken) => {
+  const firebaseLogin = useCallback(async (idToken) => {
     try {
       const { data } = await api.post('/firebase-login', { idToken });
       localStorage.setItem('recordia_token', data.token);
@@ -58,9 +59,9 @@ export function AuthProvider({ children }) {
       showError(error.response?.data?.message || 'Authentication failed.');
       throw error;
     }
-  };
+  }, [showError, showSuccess]);
 
-  const register = async (formData) => {
+  const register = useCallback(async (formData) => {
     try {
       const { data } = await api.post('/register', formData);
       localStorage.setItem('recordia_token', data.token);
@@ -72,16 +73,16 @@ export function AuthProvider({ children }) {
       showError(error.response?.data?.message || 'Registration failed.');
       throw error;
     }
-  };
+  }, [showError, showSuccess]);
 
-  const updateProfile = async (formData) => {
+  const updateProfile = useCallback(async (formData) => {
     const { data } = await api.put('/me/update', formData);
     setUser(data.user);
     showSuccess('Profile updated.');
     return data;
-  };
+  }, [showSuccess]);
 
-  const changePassword = async (oldPassword, password, confirmPassword) => {
+  const changePassword = useCallback(async (oldPassword, password, confirmPassword) => {
     const { data } = await api.put('/password/update', {
       oldPassword,
       password,
@@ -92,13 +93,13 @@ export function AuthProvider({ children }) {
     setUser(data.user);
     showSuccess('Password updated.');
     return data;
-  };
+  }, [showSuccess]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('recordia_token');
     setToken(null);
     setUser(null);
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -112,13 +113,13 @@ export function AuthProvider({ children }) {
       logout,
       loading,
     }),
-    [user, token, loading, showSuccess, showError],
+    [user, token, loading, login, firebaseLogin, register, updateProfile, changePassword, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
+function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
@@ -127,3 +128,5 @@ export function useAuth() {
 
   return context;
 }
+
+export { useAuth };
