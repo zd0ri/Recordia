@@ -5,6 +5,15 @@ import { useSnackbar } from './SnackbarContext';
 /* eslint-disable react-refresh/only-export-components */
 const AuthContext = createContext(null);
 
+function getAuthErrorMessage(error, fallback) {
+  if (error.response?.data?.message) return error.response.data.message;
+  if (error.response?.data?.error) return error.response.data.error;
+  if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+    return 'Unable to connect to the Recordia server. Start the backend on port 4001 and try again.';
+  }
+  return fallback;
+}
+
 export function AuthProvider({ children }) {
   const { showSuccess, showError } = useSnackbar();
   const [user, setUser] = useState(null);
@@ -42,7 +51,7 @@ export function AuthProvider({ children }) {
       showSuccess('Welcome back.');
       return data;
     } catch (error) {
-      showError(error.response?.data?.message || 'Login failed.');
+      showError(getAuthErrorMessage(error, 'Login failed.'));
       throw error;
     }
   }, [showError, showSuccess]);
@@ -56,7 +65,7 @@ export function AuthProvider({ children }) {
       showSuccess('Welcome to Recordia.');
       return data;
     } catch (error) {
-      showError(error.response?.data?.message || 'Authentication failed.');
+      showError(getAuthErrorMessage(error, 'Authentication failed.'));
       throw error;
     }
   }, [showError, showSuccess]);
@@ -70,7 +79,7 @@ export function AuthProvider({ children }) {
       showSuccess('Account created successfully.');
       return data;
     } catch (error) {
-      showError(error.response?.data?.message || 'Registration failed.');
+      showError(getAuthErrorMessage(error, 'Registration failed.'));
       throw error;
     }
   }, [showError, showSuccess]);

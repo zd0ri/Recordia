@@ -5,7 +5,7 @@ export default function Footer() {
     <Box component="footer" sx={{ borderTop: 1, borderColor: 'divider', py: 3, mt: 'auto' }}>
       <Container maxWidth="lg">
         <Typography color="text.secondary" variant="body2">
-          © {new Date().getFullYear()} Recordia. Curated sounds and goods.
+          © {new Date().getFullYear()} Recordia. Where Music Comes with Nostalgia.
         </Typography>
       </Container>
     </Box>

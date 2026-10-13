@@ -14,7 +14,7 @@ import {
   Select,
   Skeleton,
   Slider,
-  Stack,
+  Stack, 
   TextField,
   Typography,
 } from '@mui/material';
@@ -205,7 +205,7 @@ export default function Home() {
     <Stack spacing={3}>
       <Box>
         <Typography variant="h1">Find your next favorite record</Typography>
-        <Typography color="text.secondary">Curated sounds and goods for the Recordia collection.</Typography>
+        <Typography color="text.secondary">Where Music Meets Nostalgia</Typography>
       </Box>
       {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
       <FormControl size="small" sx={{ maxWidth: 220 }}>

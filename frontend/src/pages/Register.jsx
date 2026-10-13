@@ -80,7 +80,12 @@ export default function Register() {
             }
             navigate('/profile');
           } catch (submitError) {
-            setError(submitError.response?.data?.message || 'Registration failed');
+            setError(
+              submitError.response?.data?.message
+                || submitError.response?.data?.error
+                || submitError.message
+                || 'Registration failed',
+            );
           } finally {
             setSubmitting(false);
           }

@@ -1,3 +1,8 @@
+# Admin account
+
+- Email: `admin@recordia.com`
+- Password: `admin123`
+
 # Recordia Final Setup and End-to-End Test Checklist
 
 Use this file when setting up Recordia on a new laptop and when testing the complete application.
@@ -265,6 +270,24 @@ npm run build
 - [ ] Test Firebase email/password login.
 - [ ] Confirm inactive Firebase-linked users are blocked.
 - [ ] Confirm authentication errors show a snackbar or inline message.
+- [ ] If Google sign-in fails, record the exact Firebase error code. Check
+      `auth/unauthorized-domain`, `auth/popup-blocked`,
+      `auth/popup-closed-by-user`, missing `VITE_FIREBASE_*` values, and
+      whether the Google provider is enabled in Firebase.
+- [ ] Confirm the backend `/firebase-login` request is sent only after Google
+      returns an ID token.
+- [ ] Confirm the backend Firebase service-account project matches the frontend
+      Firebase project.
+
+### Authentication functions without a visible frontend flow
+
+- [ ] Verify the forgot-password API (`POST /password/forgot`) manually with a
+      test account and confirm the reset email is delivered.
+- [ ] Verify the reset-password API (`PUT /password/reset/:token`) with a
+      valid token, expired token, and invalid token.
+- [ ] Decide whether forgot/reset password needs a frontend page; no item is
+      complete until the intended user-facing flow exists or the API is
+      intentionally admin-only/documented.
 
 ## 11. Profile
 
@@ -493,6 +516,25 @@ Test using browser responsive mode or a real phone:
 - [ ] Backend starts without fatal errors.
 - [ ] Frontend starts without fatal errors.
 - [ ] Production build succeeds.
+- [ ] Frontend lint completes with no errors; review the existing hook warnings
+      in `admin/Dashboard`, `admin/Orders`, and `admin/Users`.
 - [ ] No unexpected browser console errors remain.
 - [ ] No credentials are committed.
 - [ ] All critical checklist items above pass.
+
+## Failure report template
+
+Use this for every unchecked or failed item:
+
+```text
+Feature:
+Environment:
+Route/action:
+Steps to reproduce:
+Expected result:
+Actual result:
+HTTP status:
+Browser console error:
+Backend log/error:
+Screenshot or request ID:
+```
