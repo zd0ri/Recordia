@@ -5,6 +5,7 @@ import { Alert, Button, Paper, Stack, TextField, Typography } from '@mui/materia
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
+  signInWithFirebaseFacebook,
   signInWithFirebaseEmail,
   signInWithFirebaseGoogle,
 } from '../firebase';
@@ -27,7 +28,34 @@ export default function Login() {
       await firebaseLogin(await result.user.getIdToken());
       navigate(location.state?.from?.pathname || '/profile', { replace: true });
     } catch (submitError) {
-      setError(submitError.response?.data?.message || submitError.message || 'Google login failed');
+      setError(
+        submitError.response?.data?.message
+          || ({
+            'auth/configuration-not-found': 'Google sign-in is not enabled for this Firebase project. Enable Google in Firebase Authentication, then restart the frontend.',
+            'auth/invalid-credential': 'Facebook rejected the Firebase credentials. Re-copy the current Facebook App ID and App Secret into Firebase, save, and try again.',
+            'auth/popup-blocked': 'Google sign-in was blocked by the browser. Allow popups for this site and try again.',
+            'auth/popup-closed-by-user': 'Google sign-in was cancelled.',
+            'auth/unauthorized-domain': 'This site is not authorized for Google sign-in in Firebase.',
+          }[submitError.code] || submitError.message || 'Google login failed'),
+      );
+    }
+  };
+
+  const continueWithFacebook = async () => {
+    setError('');
+    try {
+      const result = await signInWithFirebaseFacebook();
+      await firebaseLogin(await result.user.getIdToken());
+      navigate(location.state?.from?.pathname || '/profile', { replace: true });
+    } catch (submitError) {
+      setError(
+        submitError.response?.data?.message
+          || (submitError.code === 'auth/popup-blocked'
+            ? 'Facebook sign-in was blocked by the browser. Allow popups for this site and try again.'
+            : submitError.code === 'auth/popup-closed-by-user'
+              ? 'Facebook sign-in was cancelled.'
+              : submitError.message || 'Facebook login failed'),
+      );
     }
   };
 
@@ -64,8 +92,11 @@ export default function Login() {
               <Button disabled={isSubmitting} type="submit" variant="contained">
                 {isSubmitting ? 'Signing in...' : 'Login'}
               </Button>
-              <Button disabled={isSubmitting} onClick={continueWithGoogle} variant="outlined">
+              <Button disabled={isSubmitting} onClick={continueWithGoogle} type="button" variant="outlined">
                 Continue with Google
+              </Button>
+              <Button disabled={isSubmitting} onClick={continueWithFacebook} type="button" variant="outlined">
+                Continue with Facebook
               </Button>
             </Stack>
           </Form>

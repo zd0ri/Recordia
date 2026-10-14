@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   registerWithFirebaseEmail,
+  signInWithFirebaseFacebook,
   signInWithFirebaseEmail,
   signInWithFirebaseGoogle,
   updateFirebaseUserProfile,
@@ -43,6 +44,24 @@ export default function Register() {
       navigate('/profile');
     } catch (submitError) {
       setError(submitError.response?.data?.message || submitError.message || 'Google registration failed');
+    }
+  };
+
+  const continueWithFacebook = async () => {
+    setError('');
+    try {
+      const result = await signInWithFirebaseFacebook();
+      await firebaseLogin(await result.user.getIdToken());
+      navigate('/profile');
+    } catch (submitError) {
+      setError(
+        submitError.response?.data?.message
+          || ({
+            'auth/invalid-credential': 'Facebook rejected the Firebase credentials. Re-copy the current Facebook App ID and App Secret into Firebase, save, and try again.',
+            'auth/popup-blocked': 'Facebook sign-in was blocked by the browser. Allow popups for this site and try again.',
+            'auth/popup-closed-by-user': 'Facebook sign-in was cancelled.',
+          }[submitError.code] || submitError.message || 'Facebook registration failed'),
+      );
     }
   };
 
@@ -120,8 +139,11 @@ export default function Register() {
               <Button disabled={isSubmitting} type="submit" variant="contained">
                 {isSubmitting ? 'Creating account...' : 'Register'}
               </Button>
-              <Button disabled={isSubmitting} onClick={continueWithGoogle} variant="outlined">
+              <Button disabled={isSubmitting} onClick={continueWithGoogle} type="button" variant="outlined">
                 Continue with Google
+              </Button>
+              <Button disabled={isSubmitting} onClick={continueWithFacebook} type="button" variant="outlined">
+                Continue with Facebook
               </Button>
             </Stack>
           </Form>

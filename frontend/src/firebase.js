@@ -1,6 +1,7 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import {
   getAuth,
+  FacebookAuthProvider,
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -20,6 +21,7 @@ const firebaseConfig = {
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const firebaseAuth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+export const facebookProvider = new FacebookAuthProvider();
 
 export const signInWithFirebaseEmail = (email, password) =>
   signInWithEmailAndPassword(firebaseAuth, email, password);
@@ -32,3 +34,6 @@ export const updateFirebaseUserProfile = (user, profile) =>
 
 export const signInWithFirebaseGoogle = () =>
   signInWithPopup(firebaseAuth, googleProvider);
+
+export const signInWithFirebaseFacebook = () =>
+  signInWithPopup(firebaseAuth, facebookProvider);

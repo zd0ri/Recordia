@@ -7,6 +7,97 @@
 
 Use this file when setting up Recordia on a new laptop and when testing the complete application.
 
+## Rubric status checklist
+
+Status is based on the current source code. `✅ Implemented` means the feature is wired in the
+application and still needs a live test before submission. `⚠️ Partial` means some part of the
+requirement exists but the full rubric item is not met. `⬜ Not implemented` means no supporting
+implementation was found.
+
+### MP1 — Product/Service CRUD, multiple photos, bulk delete (20 pts)
+
+- [x] ✅ Implemented — Product CRUD datatable: create, read, edit, and delete.
+- [x] ✅ Implemented — Upload multiple product photos.
+- [x] ✅ Implemented — Select products with checkboxes and bulk delete.
+- **Current status: 20/20 pts implemented; perform a live admin CRUD test.**
+
+### MP2 — Filter functions (20 pts)
+
+- [x] ✅ Implemented — Price range filter (5 pts).
+- [x] ✅ Implemented — Category/genre filter (5 pts).
+- [x] ✅ Implemented — Minimum ratings filter (5 pts).
+- [ ] ⚠️ Partial — Review filter (5 pts): reviews are displayed and managed, but no review-count
+  or review-content filter was found.
+- **Current status: 15/20 pts implemented; add the review filter to reach 20/20.**
+
+### MP3 — Review ratings (20 pts)
+
+- [x] ✅ Implemented — A user can review/rate a product after a completed transaction (10 pts).
+- [x] ✅ Implemented — A user can update their own review/rating (5 pts).
+- [x] ✅ Implemented — An admin can delete a review (5 pts).
+- **Current status: 20/20 pts implemented; verify authorization and recalculated averages live.**
+
+### Term test lab — Transactions, email, and receipt (30 pts)
+
+- [x] ✅ Implemented — Customer can complete a transaction/order (10 pts).
+- [x] ✅ Implemented — Admin can update the transaction status (5 pts).
+- [x] ✅ Implemented — Status update email includes products, item totals/subtotals, and grand total
+  (5 pts).
+- [x] ✅ Implemented — PDF receipt is attached to the status update email (10 pts).
+- **Current status: 30/30 pts implemented; configure SMTP and verify delivery plus the PDF attachment.**
+
+### Unit 1 — Bad-word filtering and form validation (20 pts)
+
+- [x] ✅ Implemented — Reviews are filtered with the `bad-words` package (10 pts).
+- [x] ✅ Implemented — Yup/Formik validation exists for product CRUD, user login, registration, and
+  profile/password forms (10 pts).
+- **Current status: 20/20 pts implemented; test invalid inputs and profanity in the UI.**
+
+### Unit 2 — User interface design (20 pts maximum)
+
+- [x] ✅ Implemented — Custom CSS styling is present (10 pts tier).
+- [ ] ⬜ Not implemented — Bootstrap components were not found in the rendered application (15 pts tier).
+- [x] ✅ Implemented — Material UI (MUI) components are used throughout the application (20 pts tier).
+- **Current status: 20/20 pts maximum tier implemented. Do not add the Bootstrap tier on top of this
+  unless your instructor grades the tiers cumulatively.**
+
+### Quiz 2 — Sales chart (15 pts)
+
+- [x] ✅ Implemented — Sales line/bar charts with year and start/end date filters (15 pts).
+- **Current status: 15/15 pts implemented; verify completed orders only and inclusive date behavior.**
+
+### Quiz 3 — Homepage product loading (15 pts maximum)
+
+- [x] ✅ Implemented — Pagination on the homepage product list (10 pts).
+- [x] ✅ Implemented — Infinite scroll on the homepage product list (15 pts tier).
+- **Current status: 15/15 pts maximum tier implemented. Do not add the pagination tier on top of
+  this unless your instructor grades the tiers cumulatively.**
+
+### Quiz 4 — Social login (15 pts)
+
+- [x] ✅ Implemented — Facebook login through Firebase, available from both login and registration.
+- [x] ✅ Implemented — Google login through Firebase, available from both login and registration.
+- **Current status: 15/15 pts implemented. Enable both providers, configure their developer apps,
+  add the local host to authorized domains, restart the frontend, and complete live tests.**
+
+### Rubric summary
+
+| Requirement | Implemented |
+|---|---:|
+| MP1 | 20/20 |
+| MP2 | 15/20 |
+| MP3 | 20/20 |
+| Term test lab | 30/30 |
+| Unit 1 | 20/20 |
+| Unit 2 | 20/20 maximum tier |
+| Quiz 2 | 15/15 |
+| Quiz 3 | 15/15 maximum tier |
+| Quiz 4 | 15/15 |
+| **Total using maximum-tier scoring** | **170/175** |
+
+**Main remaining development task:** implement a review filter, then run the live/manual checks
+listed in the sections below. The total above is an implementation estimate, not a final grade.
+
 ## 1. Requirements
 
 - [ ] Install Node.js 20 or newer.
@@ -288,6 +379,41 @@ npm run build
 - [ ] Decide whether forgot/reset password needs a frontend page; no item is
       complete until the intended user-facing flow exists or the API is
       intentionally admin-only/documented.
+
+### Facebook login configuration
+
+- [ ] In Firebase Authentication > Sign-in method > Facebook, enable Facebook
+      and enter the Facebook App ID and App Secret.
+- [ ] If Firebase reports `auth/invalid-credential` or
+      `Error validating client secret`, open Facebook Developer > Settings >
+      Basic, reveal or regenerate the current **App Secret**, then copy the
+      complete value into Firebase's Facebook provider configuration. Use the
+      App Secret, not the App ID, and do not include quotes or extra spaces.
+- [ ] Save the Firebase provider configuration, then retry in a fresh browser
+      session. If the secret was regenerated, replace it in Firebase immediately;
+      the previous secret is invalid.
+- [ ] If Facebook still shows the old `auth/invalid-credential` error after
+      updating the secret, disable and re-enable the Facebook provider in
+      Firebase, re-enter the App ID and newly generated App Secret as a pair,
+      save, sign out of Facebook in the popup, clear the site's Firebase/Auth
+      cookies, and retry. The Facebook popup login alone is not proof that the
+      Firebase token exchange succeeded.
+- [ ] In the Facebook Developer app, add the Firebase auth domain to **App Domains**
+      as a hostname only:
+
+```text
+recordia-b74a5.firebaseapp.com
+```
+
+- [ ] In Facebook Login > Settings, add this exact OAuth redirect URI:
+
+```text
+https://recordia-b74a5.firebaseapp.com/__/auth/handler
+```
+
+- [ ] In Firebase Authentication > Settings > Authorized domains, add `localhost`
+      and `recordia-b74a5.firebaseapp.com`.
+- [ ] Restart the Vite frontend after changing Firebase or Facebook settings.
 
 ## 11. Profile
 
