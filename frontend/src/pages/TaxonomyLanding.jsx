@@ -13,10 +13,11 @@ export default function TaxonomyLanding({ type }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    Promise.all([
-      api.get(isArtist ? '/artists' : '/genres'),
-      api.get('/products', { params: { page: 1, limit: 100 } }),
-    ]).then(([taxonomyResponse, productsResponse]) => {
+    const requests = [api.get(isArtist ? '/artists' : '/genres')];
+    if (!isArtist) requests.push(api.get('/products', { params: { page: 1, limit: 100 } }));
+
+    Promise.all(requests).then((responses) => {
+      const taxonomyResponse = responses[0];
       const taxonomyItems = isArtist ? taxonomyResponse.data.artists || [] : taxonomyResponse.data.genres || [];
       setItems(taxonomyItems);
       const requestedName = searchParams.get('keyword')?.toLowerCase();
@@ -24,7 +25,7 @@ export default function TaxonomyLanding({ type }) {
         const requestedItem = taxonomyItems.find((item) => item.name?.toLowerCase() === requestedName);
         if (requestedItem) setSelected(requestedItem._id);
       }
-      setProducts(productsResponse.data.products || []);
+      if (!isArtist) setProducts(responses[1].data.products || []);
     }).catch((requestError) => {
       setError(requestError.response?.data?.message || `Unable to load ${type}`);
     });
@@ -63,18 +64,52 @@ export default function TaxonomyLanding({ type }) {
       </Box>
       <Box className={`taxonomy-directory ${isArtist ? 'artist-directory' : 'genre-directory'}`}>
         {items.map((item) => <Button key={item._id} className={selected === item._id ? 'is-selected' : ''} onClick={() => setSelected(item._id)}>
-          {!isArtist && <span className="taxonomy-card-mark">●</span>}
+          {isArtist
+            ? (item.image?.url
+              ? <Box component="img" src={item.image.url} alt="" sx={{ borderRadius: '50%', height: 42, objectFit: 'cover', width: 42 }} />
+              : <span className="taxonomy-card-mark">●</span>)
+            : <span className="taxonomy-card-mark">●</span>}
           <span>{item.name}</span><small>{isArtist ? 'View discography →' : 'Browse shelf →'}</small>
         </Button>)}
       </Box>
       <Box className="taxonomy-results">
-        <Box className="section-heading">
-          <Box><Typography className="eyebrow">{selected ? (isArtist ? 'SELECTED ARTIST' : 'SELECTED GENRE') : 'ALL SHELVES'}</Typography><Typography variant="h2">{selected ? items.find((item) => item._id === selected)?.name : pageContent.allLabel}</Typography></Box>
-          {selected && <Button onClick={() => setSelected('')}>Show all</Button>}
-        </Box>
-        {products.length === 0 && !error ? <Grid container spacing={2}>{[1, 2, 3].map((item) => <Grid key={item} size={{ xs: 12, sm: 6, md: 4 }}><Skeleton height={340} variant="rectangular" /></Grid>)}</Grid>
-          : filteredProducts.length ? <Grid container spacing={2}>{filteredProducts.map((product) => <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4 }}><ProductCard product={product} /></Grid>)}</Grid>
-            : <Box className="collection-empty"><Typography variant="h3">This shelf is being stocked.</Typography><Button component={RouterLink} to="/" variant="contained">Return to records</Button></Box>}
+        {isArtist ? (
+          <Grid className="artist-detail-grid" container spacing={2}>
+            {(selected ? items.filter((item) => item._id === selected) : items).map((artist) => (
+              <Grid key={artist._id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Box className="artist-detail-card">
+                  {artist.image?.url && <Box component="img" src={artist.image.url} alt={artist.name} />}
+                  <Box className="artist-detail-copy">
+                    <Typography className="eyebrow">ARTIST PROFILE</Typography>
+                    <Typography variant="h3">{artist.name}</Typography>
+                    <Typography>{artist.bio || 'No biography has been added yet.'}</Typography>
+                    {selected === artist._id && <Button onClick={() => setSelected('')}>Show all artists</Button>}
+                  </Box>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <>
+            <Box className="section-heading">
+              <Box><Typography className="eyebrow">{selected ? 'SELECTED GENRE' : 'ALL SHELVES'}</Typography><Typography variant="h2">{selected ? items.find((item) => item._id === selected)?.name : pageContent.allLabel}</Typography></Box>
+              {selected && <Button onClick={() => setSelected('')}>Show all</Button>}
+            </Box>
+            {products.length === 0 && !error && (
+              <Grid container spacing={2}>
+                {[1, 2, 3].map((item) => <Grid key={item} size={{ xs: 12, sm: 6, md: 4 }}><Skeleton height={340} variant="rectangular" /></Grid>)}
+              </Grid>
+            )}
+            {products.length > 0 && filteredProducts.length > 0 && (
+              <Grid container spacing={2}>
+                {filteredProducts.map((product) => <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4 }}><ProductCard product={product} /></Grid>)}
+              </Grid>
+            )}
+            {products.length > 0 && !filteredProducts.length && (
+              <Box className="collection-empty"><Typography variant="h3">This shelf is being stocked.</Typography><Button component={RouterLink} to="/" variant="contained">Return to records</Button></Box>
+            )}
+          </>
+        )}
       </Box>
     </Stack>
   );

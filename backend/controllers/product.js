@@ -9,6 +9,25 @@ const {
 } = require('../utils/productImages');
 const Order = require('../models/order');
 const filterBadWords = require('../utils/filterBadWords');
+const ErrorHandler = require('../utils/ErrorHandler');
+
+const parseArrayField = (value) => {
+    let parsedValue = value;
+
+    if (typeof value === 'string') {
+        try {
+            parsedValue = JSON.parse(value);
+        } catch (error) {
+            throw new ErrorHandler('existingImageIds must be a valid array', 400);
+        }
+    }
+
+    if (!Array.isArray(parsedValue) || parsedValue.some((id) => typeof id !== 'string')) {
+        throw new ErrorHandler('existingImageIds must be an array of image IDs', 400);
+    }
+
+    return parsedValue;
+};
 
 exports.newProduct = catchAsync(async (req, res) => {
     const images = await uploadProductImages(getImageSources(req));
@@ -82,10 +101,21 @@ exports.updateProduct = catchAsync(async (req, res) => {
 
     const imageSources = getImageSources(req);
     let productData = { ...req.body };
+    const hasImageSelection = req.body.existingImageIds !== undefined;
+    const existingImageIds = hasImageSelection
+        ? parseArrayField(req.body.existingImageIds)
+        : null;
+    const existingImages = product.images.filter((image) =>
+        existingImageIds?.includes(image.public_id)
+    );
 
-    if (imageSources.length > 0) {
+    delete productData.existingImageIds;
+
+    if (hasImageSelection || imageSources.length > 0) {
         const newImages = await uploadProductImages(imageSources);
-        productData.images = newImages;
+        productData.images = hasImageSelection
+            ? [...existingImages, ...newImages]
+            : newImages;
     } else {
         delete productData.images;
     }
@@ -99,8 +129,15 @@ exports.updateProduct = catchAsync(async (req, res) => {
         }
     );
 
-    if (imageSources.length > 0) {
-        await deleteProductImages(product.images);
+    if (hasImageSelection || imageSources.length > 0) {
+        const retainedImages = productData.images || product.images;
+        await deleteProductImages(
+            product.images.filter((image) =>
+                !retainedImages.some((retainedImage) =>
+                    retainedImage.public_id === image.public_id
+                )
+            )
+        );
     }
 
     res.status(200).json({

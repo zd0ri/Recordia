@@ -3,7 +3,9 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import {
   Alert,
+  Box,
   Button,
+  IconButton,
   Grid,
   MenuItem,
   Paper,
@@ -11,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
 
@@ -35,6 +38,7 @@ const emptyValues = {
   description: '',
   stocks: '',
   images: [],
+  existingImageIds: [],
 };
 
 const readFilesAsBase64 = (files) => Promise.all(
@@ -53,6 +57,7 @@ export default function ProductForm() {
   const [artists, setArtists] = useState([]);
   const [genres, setGenres] = useState([]);
   const [initialValues, setInitialValues] = useState(emptyValues);
+  const [existingImages, setExistingImages] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(editing);
@@ -76,8 +81,9 @@ export default function ProductForm() {
             description: product.description || '',
             stocks: product.stocks ?? '',
             images: [],
+            existingImageIds: (product.images || []).map((image) => image.public_id),
           });
-          setPreviews((product.images || []).map((image) => image.url));
+          setExistingImages(product.images || []);
         }
       } catch (requestError) {
         setError(requestError.response?.data?.message || 'Unable to load product data');
@@ -105,6 +111,7 @@ export default function ProductForm() {
           try {
             const payload = { ...values };
             if (!payload.images.length) delete payload.images;
+            if (!editing) delete payload.existingImageIds;
             const response = editing
               ? await api.put(`/admin/product/${id}`, payload)
               : await api.post('/admin/product/new', payload);
@@ -172,13 +179,42 @@ export default function ProductForm() {
                     />
                   </Button>
                   <Stack direction="row" flexWrap="wrap" gap={1}>
+                    {existingImages.map((image, index) => (
+                      <Box key={image.public_id} sx={{ position: 'relative' }}>
+                        <img src={image.url} alt={`Product image ${index + 1}`} width="96" height="96" style={{ objectFit: 'cover' }} />
+                        <IconButton
+                          aria-label={`Remove product image ${index + 1}`}
+                          onClick={() => {
+                            setExistingImages((current) => current.filter((currentImage) => currentImage.public_id !== image.public_id));
+                            setFieldValue('existingImageIds', values.existingImageIds.filter((imageId) => imageId !== image.public_id));
+                          }}
+                          size="small"
+                          sx={{ bgcolor: 'background.paper', position: 'absolute', right: -8, top: -8 }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    ))}
                     {previews.map((preview, index) => (
-                      <img key={`${preview}-${index}`} src={preview} alt={`Product preview ${index + 1}`} width="96" height="96" style={{ objectFit: 'cover' }} />
+                      <Box key={`${preview}-${index}`} sx={{ position: 'relative' }}>
+                        <img src={preview} alt={`New product preview ${index + 1}`} width="96" height="96" style={{ objectFit: 'cover' }} />
+                        <IconButton
+                          aria-label={`Remove new product image ${index + 1}`}
+                          onClick={() => {
+                            setPreviews((current) => current.filter((_, previewIndex) => previewIndex !== index));
+                            setFieldValue('images', values.images.filter((_, imageIndex) => imageIndex !== index));
+                          }}
+                          size="small"
+                          sx={{ bgcolor: 'background.paper', position: 'absolute', right: -8, top: -8 }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
                     ))}
                   </Stack>
                   {editing && values.images.length > 0 && (
                     <Typography color="text.secondary" variant="caption">
-                      Saving these new images will replace the existing image set.
+                      New images will be added to the images you keep.
                     </Typography>
                   )}
                 </Stack>

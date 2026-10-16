@@ -9,10 +9,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { DataGrid } from '@mui/x-data-grid';
 import api from '../../api/axios';
 
@@ -21,9 +23,17 @@ const schema = Yup.object({
   bio: Yup.string().max(2000, 'Bio cannot exceed 2000 characters'),
 });
 
+const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+});
+
 export default function Artists() {
   const [rows, setRows] = useState([]);
   const [editing, setEditing] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState('');
 
   const loadArtists = async () => {
@@ -33,6 +43,11 @@ export default function Artists() {
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to load artists');
     }
+  };
+
+  const openArtistEditor = (artist) => {
+    setSelectedFile(null);
+    setEditing(artist);
   };
 
   useEffect(() => {
@@ -55,13 +70,24 @@ export default function Artists() {
     <Box>
       <Stack alignItems={{ xs: 'stretch', sm: 'center' }} direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
         <Typography variant="h3">Artists</Typography>
-        <Button variant="contained" onClick={() => setEditing({ _id: null, name: '', bio: '' })}>Add artist</Button>
+        <Button variant="contained" onClick={() => openArtistEditor({ _id: null, name: '', bio: '' })}>Add artist</Button>
       </Stack>
       {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
       <Box sx={{ height: 560, width: '100%' }}>
         <DataGrid
           rows={rows}
           columns={[
+            {
+              field: 'image',
+              headerName: 'Image',
+              width: 90,
+              sortable: false,
+              renderCell: ({ row }) => (
+                row.image?.url
+                  ? <Box component="img" src={row.image.url} alt={row.name} sx={{ height: 42, objectFit: 'cover', width: 42 }} />
+                  : <Button size="small" onClick={() => openArtistEditor(row)}>Upload image</Button>
+              ),
+            },
             { field: 'name', headerName: 'Name', flex: 1, minWidth: 180 },
             { field: 'bio', headerName: 'Bio', flex: 2, minWidth: 260 },
             {
@@ -71,7 +97,7 @@ export default function Artists() {
               sortable: false,
               renderCell: ({ row }) => (
                 <Stack direction="row" spacing={1}>
-                  <Button size="small" onClick={() => setEditing(row)}>Edit</Button>
+                  <Button size="small" onClick={() => openArtistEditor(row)}>Edit</Button>
                   <Button color="error" size="small" onClick={() => deleteArtist(row._id)}>Delete</Button>
                 </Stack>
               ),
@@ -86,14 +112,19 @@ export default function Artists() {
         <DialogTitle>{editing?._id ? 'Edit artist' : 'Add artist'}</DialogTitle>
         <Formik
           enableReinitialize
-          initialValues={{ name: editing?.name || '', bio: editing?.bio || '' }}
+          initialValues={{ name: editing?.name || '', bio: editing?.bio || '', image: '', removeImage: false }}
           validationSchema={schema}
           onSubmit={async (values, { setSubmitting, setFieldError }) => {
             setError('');
             try {
+              const payload = new FormData();
+              payload.append('name', values.name);
+              payload.append('bio', values.bio);
+              payload.append('removeImage', String(values.removeImage));
+              if (selectedFile) payload.append('image', selectedFile);
               const response = editing._id
-                ? await api.put(`/admin/artist/${editing._id}`, values)
-                : await api.post('/admin/artist', values);
+                ? await api.put(`/admin/artist/${editing._id}`, payload)
+                : await api.post('/admin/artist', payload);
               const artist = { ...response.data.artist, id: response.data.artist._id };
               setRows((current) => editing._id
                 ? current.map((row) => (row._id === artist._id ? artist : row))
@@ -108,10 +139,59 @@ export default function Artists() {
             }
           }}
         >
-          {({ errors, touched, isSubmitting }) => (
+          {({ errors, touched, isSubmitting, setFieldValue, values }) => (
             <Form>
               <DialogContent>
                 <Stack spacing={2} sx={{ pt: 1 }}>
+                  {(editing?.image?.url && !values.removeImage && !values.image) && (
+                    <Box sx={{ position: 'relative', width: 'fit-content' }}>
+                      <Box component="img" src={editing.image.url} alt={`${editing.name} portrait`} sx={{ border: 2, borderColor: 'divider', borderRadius: 2, height: 120, objectFit: 'cover', width: 120 }} />
+                      <IconButton
+                        aria-label="Remove artist image"
+                        onClick={() => setFieldValue('removeImage', true)}
+                        size="small"
+                        sx={{ bgcolor: 'background.paper', position: 'absolute', right: -10, top: -10 }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  )}
+                  {values.image && (
+                    <Box sx={{ position: 'relative', width: 'fit-content' }}>
+                      <Box component="img" src={values.image} alt="Selected artist preview" sx={{ border: 2, borderColor: 'primary.main', borderRadius: 2, height: 120, objectFit: 'cover', width: 120 }} />
+                      <IconButton
+                        aria-label="Remove selected artist image"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setFieldValue('image', '');
+                        }}
+                        size="small"
+                        sx={{ bgcolor: 'background.paper', position: 'absolute', right: -10, top: -10 }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  )}
+                  <Button component="label" variant="outlined">
+                    {editing?.image && !values.image ? 'Replace artist image' : 'Choose artist image'}
+                    <input
+                      hidden
+                      accept="image/jpeg,image/png"
+                      type="file"
+                      onChange={async (event) => {
+                        const file = event.currentTarget.files?.[0];
+                        if (!file) return;
+                        try {
+                          setSelectedFile(file);
+                          setFieldValue('image', await readFileAsBase64(file));
+                          setFieldValue('removeImage', false);
+                        } catch {
+                          setError('Unable to read artist image');
+                        }
+                      }}
+                    />
+                  </Button>
+                  {values.image && <Typography color="text.secondary" variant="caption">Preview shown. Save to upload this image.</Typography>}
                   <Field
                     as={TextField}
                     autoFocus

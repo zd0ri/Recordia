@@ -9,6 +9,10 @@ const artistSchema = new mongoose.Schema({
     },
     bio: {
         type: String
+    },
+    image: {
+        public_id: String,
+        url: String
     }
 });
 

@@ -148,6 +148,319 @@ footer {
   color: #f8ce0b;
 }
 
+/* Admin control room */
+.admin-shell {
+  --admin-ink: #202b38;
+  --admin-navy: #172536;
+  --admin-cream: #fff7e6;
+  --admin-red: #e45445;
+  --admin-yellow: #f2bd4c;
+  position: relative;
+  isolation: isolate;
+}
+
+.admin-shell::before {
+  background: radial-gradient(circle at 15% 15%, rgba(228, 84, 69, 0.12), transparent 22rem),
+    radial-gradient(circle at 90% 75%, rgba(242, 189, 76, 0.16), transparent 24rem);
+  content: '';
+  inset: -2rem;
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.admin-sidebar {
+  background: var(--admin-navy);
+  border: 3px solid var(--admin-ink);
+  border-radius: 4px;
+  box-shadow: 7px 7px 0 rgba(32, 43, 56, 0.2);
+  color: var(--admin-cream);
+  min-width: 224px;
+  overflow: hidden;
+  padding: 1rem;
+  position: sticky;
+  top: 1.25rem;
+}
+
+.admin-brand {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.25rem 0.25rem 1rem;
+}
+
+.admin-brand-mark {
+  align-items: center;
+  background: var(--admin-red);
+  border: 2px solid var(--admin-cream);
+  color: var(--admin-cream);
+  display: flex;
+  font-family: 'Bowlby One SC', sans-serif;
+  font-size: 1.35rem;
+  height: 2.4rem;
+  justify-content: center;
+  transform: rotate(-6deg);
+  width: 2.4rem;
+}
+
+.admin-brand-title {
+  color: var(--admin-cream);
+  font-family: 'Bowlby One SC', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+
+.admin-brand-subtitle,
+.admin-nav-label,
+.admin-stat-footnote,
+.admin-section-kicker,
+.admin-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.admin-brand-subtitle {
+  color: var(--admin-yellow);
+}
+
+.admin-sidebar .MuiDivider-root {
+  border-color: rgba(255, 247, 230, 0.2);
+}
+
+.admin-nav-label {
+  color: rgba(255, 247, 230, 0.58);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.admin-nav-links {
+  gap: 0.35rem;
+}
+
+.admin-nav-button {
+  border: 2px solid transparent !important;
+  border-radius: 2px !important;
+  color: rgba(255, 247, 230, 0.72) !important;
+  font-size: 0.78rem !important;
+  justify-content: flex-start !important;
+  letter-spacing: 0.04em !important;
+  min-height: 2.5rem !important;
+  padding: 0.55rem 0.7rem !important;
+  text-transform: uppercase !important;
+}
+
+.admin-nav-button .MuiSvgIcon-root {
+  font-size: 1.15rem;
+}
+
+.admin-nav-button:hover {
+  background: rgba(255, 247, 230, 0.1) !important;
+  border-color: rgba(255, 247, 230, 0.35) !important;
+  color: var(--admin-cream) !important;
+  transform: translateX(3px);
+}
+
+.admin-nav-button.MuiButton-contained {
+  background: var(--admin-red) !important;
+  border-color: var(--admin-cream) !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);
+  color: var(--admin-cream) !important;
+}
+
+.admin-sidebar-note {
+  border-top: 1px dashed rgba(255, 247, 230, 0.3);
+  color: rgba(255, 247, 230, 0.65);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  margin-top: 1.5rem;
+  padding: 1rem 0.25rem 0.25rem;
+}
+
+.admin-sidebar-note > :first-child {
+  color: #79d7a4;
+  font-family: 'Bowlby One SC', sans-serif;
+}
+
+.admin-page-heading {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.admin-eyebrow,
+.admin-section-kicker {
+  color: var(--admin-red);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.admin-page-heading h2 {
+  color: var(--admin-ink);
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  line-height: 0.95;
+  text-shadow: 3px 3px 0 rgba(242, 189, 76, 0.48);
+}
+
+.admin-page-intro {
+  color: #5d665e;
+  margin-top: 0.7rem;
+}
+
+.admin-status-sticker {
+  background: var(--admin-yellow);
+  border: 3px solid var(--admin-ink);
+  box-shadow: 5px 5px 0 var(--admin-ink);
+  color: var(--admin-ink);
+  font-family: 'Bowlby One SC', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.1;
+  padding: 0.75rem;
+  text-align: center;
+  transform: rotate(5deg);
+}
+
+.admin-status-sticker span {
+  color: var(--admin-red);
+  font-size: 1.2rem;
+}
+
+.admin-stat-card,
+.admin-chart-card {
+  background: var(--admin-cream) !important;
+  border: 2px solid var(--admin-ink);
+  border-radius: 3px !important;
+  box-shadow: 5px 5px 0 rgba(32, 43, 56, 0.17) !important;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-stat-card {
+  height: 100%;
+}
+
+.admin-stat-card:hover {
+  box-shadow: 8px 8px 0 rgba(32, 43, 56, 0.2) !important;
+  transform: translate(-3px, -3px);
+}
+
+.admin-stat-card .MuiCardContent-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 155px;
+  padding: 1.2rem;
+}
+
+.admin-stat-icon {
+  align-items: center;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  display: flex;
+  height: 2.2rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+  width: 2.2rem;
+}
+
+.stat-amber .admin-stat-icon { color: #c78118; }
+.stat-coral .admin-stat-icon { color: var(--admin-red); }
+.stat-mint .admin-stat-icon { color: #3a9271; }
+.stat-blue .admin-stat-icon { color: #47799e; }
+
+.admin-stat-label {
+  color: #5d665e;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-stat-value {
+  color: var(--admin-ink);
+  font-family: 'Bowlby One SC', sans-serif !important;
+  font-size: clamp(1rem, 1.6vw, 1.45rem) !important;
+  line-height: 1.1 !important;
+  margin-top: 0.25rem !important;
+  white-space: nowrap;
+}
+
+.admin-stat-card .admin-stat-label,
+.admin-stat-card .admin-stat-value {
+  display: block;
+  max-width: 100%;
+}
+
+.admin-stat-footnote {
+  color: #8b8b79;
+  font-size: 0.18rem;
+  letter-spacing: 0.01em;
+  margin-top: auto !important;
+  padding-top: 0.45rem;
+  white-space: nowrap;
+}
+
+.admin-filter-bar {
+  background: rgba(255, 247, 230, 0.7);
+  border: 2px dashed rgba(32, 43, 56, 0.38);
+  padding: 0.85rem;
+}
+
+.admin-filter-bar .MuiButton-contained {
+  background: var(--admin-red);
+  box-shadow: 3px 3px 0 var(--admin-ink);
+}
+
+.admin-filter-bar .MuiButton-outlined {
+  border-color: var(--admin-ink);
+  color: var(--admin-ink);
+}
+
+.admin-chart-card {
+  overflow: hidden;
+}
+
+.admin-chart-heading {
+  align-items: center;
+  border-bottom: 2px solid rgba(32, 43, 56, 0.15);
+  display: flex;
+  justify-content: space-between;
+  margin: -0.5rem -0.5rem 1rem;
+  padding: 0.5rem 0.75rem 1rem;
+}
+
+.admin-chart-heading h5 {
+  color: var(--admin-ink);
+  font-family: 'Bowlby One SC', sans-serif;
+  font-size: 1.05rem;
+}
+
+.admin-chart-badge {
+  border: 2px solid var(--admin-red);
+  color: var(--admin-red);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.35rem 0.5rem;
+}
+
+@media (max-width: 899px) {
+  .admin-sidebar {
+    position: static;
+  }
+
+  .admin-nav-button {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-page-heading {
+    gap: 1rem;
+  }
+
+  .admin-status-sticker {
+    font-size: 0.6rem;
+    padding: 0.5rem;
+  }
+}
+
 /* Product Details Page */
 #product_id {
   color: grey;
@@ -1599,6 +1912,43 @@ footer {
   margin-bottom: .5rem;
   color: #f3bd3b;
   font-size: 1.4rem;
+}
+
+.artist-detail-grid {
+  align-items: stretch;
+}
+
+.artist-detail-card {
+  background: #fff8e8;
+  border: 2px solid #542d2d;
+  box-shadow: 5px 5px 0 #d69a2d;
+  height: 100%;
+  overflow: hidden;
+}
+
+.artist-detail-card > img {
+  display: block;
+  height: 260px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.artist-detail-copy {
+  padding: 1.25rem;
+}
+
+.artist-detail-copy h3 {
+  color: #542d2d;
+  margin: 0.25rem 0 0.7rem;
+}
+
+.artist-detail-copy > p:not(.eyebrow) {
+  color: #684a39;
+  line-height: 1.6;
+}
+
+.artist-detail-copy .MuiButton-root {
+  margin-top: 1rem;
 }
 
 .taxonomy-directory span {

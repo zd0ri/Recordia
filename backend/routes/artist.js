@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const upload = require('../utils/multer');
 
 const {
     getArtists,
@@ -18,12 +19,14 @@ router.post(
     '/admin/artist',
     isAuthenticatedUser,
     authorizeRoles('admin'),
+    upload.single('image'),
     createArtist
 );
 router.put(
     '/admin/artist/:id',
     isAuthenticatedUser,
     authorizeRoles('admin'),
+    upload.single('image'),
     updateArtist
 );
 router.delete(

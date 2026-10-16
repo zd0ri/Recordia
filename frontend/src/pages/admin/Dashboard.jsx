@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert, Button, Card, CardContent, CircularProgress, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Stack, Switch, TextField, Typography,
+  Alert, Box, Button, Card, CardContent, CircularProgress, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Stack, Switch, TextField, Typography,
 } from '@mui/material';
 import {
   Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import ShoppingBagRoundedIcon from '@mui/icons-material/ShoppingBagRounded';
+import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import api from '../../api/axios';
 
 const currentYear = new Date().getFullYear();
@@ -90,22 +94,36 @@ export default function Dashboard() {
   );
 
   return (
-    <Stack spacing={3}>
-      <Typography variant="h2">Sales dashboard</Typography>
+    <Stack className="admin-dashboard" spacing={3}>
+      <Box className="admin-page-heading">
+        <Box>
+          <Typography className="admin-eyebrow">RECORDIA / BACKSTAGE</Typography>
+          <Typography variant="h2">Sales dashboard</Typography>
+          <Typography className="admin-page-intro">Keep the press spinning. Track your shop at a glance.</Typography>
+        </Box>
+        <Box className="admin-status-sticker">LIVE<br /><span>●</span></Box>
+      </Box>
       {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
       <Grid container spacing={2}>
         {[
-          ['Total sales', `$${Number(sales.totalSales || 0).toFixed(2)}`],
-          ['Completed orders', sales.orderCount || 0],
-          ['Products', counts.products],
-          ['Users', counts.users],
-        ].map(([label, value]) => (
+          ['Total sales', `$${Number(sales.totalSales || 0).toFixed(2)}`, TrendingUpRoundedIcon, 'amber'],
+          ['Completed orders', sales.orderCount || 0, ShoppingBagRoundedIcon, 'coral'],
+          ['Products', counts.products, Inventory2RoundedIcon, 'mint'],
+          ['Users', counts.users, PeopleAltRoundedIcon, 'blue'],
+        ].map(([label, value, Icon, color]) => (
           <Grid key={label} size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card><CardContent><Typography color="text.secondary">{label}</Typography><Typography variant="h4">{value}</Typography></CardContent></Card>
+            <Card className={`admin-stat-card stat-${color}`}>
+              <CardContent>
+                <Box className="admin-stat-icon"><Icon /></Box>
+                <Typography className="admin-stat-label">{label}</Typography>
+                <Typography className="admin-stat-value" variant="h4">{value}</Typography>
+                <Typography className="admin-stat-footnote">UPDATED JUST NOW</Typography>
+              </CardContent>
+            </Card>
           </Grid>
         ))}
       </Grid>
-      <Stack alignItems={{ xs: 'stretch', md: 'center' }} direction={{ xs: 'column', md: 'row' }} spacing={2}>
+      <Stack className="admin-filter-bar" alignItems={{ xs: 'stretch', md: 'center' }} direction={{ xs: 'column', md: 'row' }} spacing={2}>
         <FormControl size="small" sx={{ minWidth: 130 }}>
           <InputLabel id="sales-year">Year</InputLabel>
           <Select labelId="sales-year" label="Year" value={year} onChange={(event) => setYear(event.target.value)}>
@@ -118,7 +136,14 @@ export default function Dashboard() {
         <Button variant="outlined" onClick={resetRange}>Reset</Button>
         <FormControlLabel control={<Switch checked={chartType === 'bar'} onChange={(event) => setChartType(event.target.checked ? 'bar' : 'line')} />} label="Bar chart" />
       </Stack>
-      <Card sx={{ p: 2, minWidth: 0 }}>
+      <Card className="admin-chart-card" sx={{ p: 2, minWidth: 0 }}>
+        <Box className="admin-chart-heading">
+          <Box>
+            <Typography className="admin-section-kicker">PERFORMANCE LOG</Typography>
+            <Typography variant="h5">Sales by month</Typography>
+          </Box>
+          <Typography className="admin-chart-badge">{chartType === 'line' ? 'LINE MODE' : 'BAR MODE'}</Typography>
+        </Box>
         {loading ? (
           <Stack alignItems="center" justifyContent="center" sx={{ height: 420 }}>
             <CircularProgress aria-label="Loading dashboard" />

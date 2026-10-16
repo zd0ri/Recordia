@@ -1,13 +1,13 @@
 const fs = require('fs/promises');
 const cloudinary = require('cloudinary');
 
-const uploadImage = (source) => {
+const uploadImage = (source, folder) => {
     const uploadSource = typeof source === 'string' ? source : source.path;
 
     return cloudinary.v2.uploader.upload(uploadSource, {
-        folder: 'products',
-        width: 150,
-        crop: 'scale'
+        folder,
+        quality: 'auto',
+        fetch_format: 'auto'
     });
 };
 
@@ -47,12 +47,12 @@ const getImageSources = (req) => {
     return sources;
 };
 
-const uploadProductImages = async (sources) => {
+const uploadImages = async (sources, folder) => {
     const uploadedImages = [];
 
     try {
         for (const source of sources) {
-            const result = await uploadImage(source);
+            const result = await uploadImage(source, folder);
             uploadedImages.push({
                 public_id: result.public_id,
                 url: result.secure_url
@@ -70,6 +70,9 @@ const uploadProductImages = async (sources) => {
     }
 };
 
+const uploadProductImages = (sources) => uploadImages(sources, 'products');
+const uploadArtistImages = (sources) => uploadImages(sources, 'artists');
+
 const deleteProductImages = async (images = []) => {
     await Promise.all(
         images
@@ -81,6 +84,7 @@ const deleteProductImages = async (images = []) => {
 module.exports = {
     getImageSources,
     uploadProductImages,
+    uploadArtistImages,
     deleteProductImages,
     uploadReviewImage
 };
