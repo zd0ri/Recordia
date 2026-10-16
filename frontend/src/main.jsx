@@ -8,6 +8,7 @@ import { CartProvider } from './context/CartContext';
 import { SnackbarProvider } from './context/SnackbarContext';
 import theme from './theme';
 import './index.css';
+import './App.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

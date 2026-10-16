@@ -10,9 +10,9 @@ export default function Navbar() {
   const { itemCount } = useCart();
   const navigate = useNavigate();
   return (
-    <AppBar position="static" color="primary" elevation={0}>
+    <AppBar className="recordia-navbar" position="static" color="primary" elevation={0}>
       <Toolbar sx={{ flexWrap: 'wrap', gap: { xs: 0.5, sm: 2 }, justifyContent: 'space-between', py: 1 }}>
-        <Button color="inherit" component={RouterLink} startIcon={<AlbumOutlinedIcon />} to="/" sx={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '.08em' }}>Recordia</Button>
+        <Button className="recordia-logo" color="inherit" component={RouterLink} startIcon={<AlbumOutlinedIcon />} to="/">Recordia</Button>
         <Stack direction="row" alignItems="center" flexWrap="wrap" justifyContent="flex-end" spacing={{ xs: 0, sm: 1 }} sx={{ flex: 1, minWidth: 0 }}>
           <Button color="inherit" component={RouterLink} to="/" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Home</Button>
           {user?.role !== 'admin' && <IconButton color="inherit" component={RouterLink} to="/cart" aria-label="Cart">

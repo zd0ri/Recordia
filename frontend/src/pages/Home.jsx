@@ -211,13 +211,31 @@ export default function Home() {
     setSearchParams(next);
   };
 
+  const featuredProduct = products[0];
+
   return (
-    <Stack spacing={3}>
-      <Box>
-        <Typography variant="h1">Find your next favorite record</Typography>
-        <Typography color="text.secondary">Where Music Meets Nostalgia</Typography>
+    <Stack className="home-page" spacing={5}>
+      <Box className="recordia-hero">
+        <Box className="hero-copy">
+          <Typography className="eyebrow">THE ANALOG COLLECTION / EST. 2024</Typography>
+          <Typography className="hero-title" variant="h1">Find your next<br /><em>favorite record.</em></Typography>
+          <Typography className="hero-description">Curated sounds, timeless sleeves, and the warm crackle of music made tangible.</Typography>
+          <Stack direction="row" flexWrap="wrap" gap={1.5}>
+            <Button className="hero-primary" component="a" href="#collection" variant="contained">Explore records</Button>
+            <Button className="hero-secondary" onClick={() => updateFilter('genre', genres[0]?._id || '')} variant="outlined">Browse collections</Button>
+          </Stack>
+        </Box>
+        <Box className="hero-art">
+          <span className="hero-sticker">PLAY<br />IT<br />LOUD</span>
+          <div className="hero-record" aria-hidden="true"><span /></div>
+          {featuredProduct && <Box component="img" className="hero-sleeve" src={featuredProduct.images?.[0]?.url} alt={featuredProduct.album_title} />}
+        </Box>
       </Box>
       {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
+      <Box className="section-heading" id="collection">
+        <Box><Typography className="eyebrow">THE RECORD ROOM</Typography><Typography variant="h2">Browse the collection</Typography></Box>
+        <Typography className="section-note">Handpicked for curious ears.</Typography>
+      </Box>
       <FormControl size="small" sx={{ maxWidth: 220 }}>
         <InputLabel id="display-mode-label">Display mode</InputLabel>
         <Select labelId="display-mode-label" label="Display mode" value={filters.mode} onChange={changeMode}>
