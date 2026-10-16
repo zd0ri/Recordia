@@ -900,12 +900,33 @@ footer {
 
 /* Homepage record-shop direction */
 .recordia-navbar {
+  position: relative;
   background: #542d2d !important;
   border-bottom: 5px solid #d69a2d;
   box-shadow: 0 4px 0 rgba(84, 45, 45, 0.14) !important;
 }
 
+.recordia-navbar::after {
+  position: absolute;
+  right: 0;
+  bottom: -5px;
+  left: 0;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, #f3bd3b 0 10px, transparent 10px 18px);
+  content: '';
+}
+
+.recordia-toolbar {
+  min-height: 76px !important;
+  padding-right: clamp(1rem, 5vw, 5rem) !important;
+  padding-left: clamp(1rem, 5vw, 5rem) !important;
+}
+
 .recordia-logo {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  gap: .55rem;
   color: #fff8e8 !important;
   font-family: 'Playfair Display', Georgia, serif !important;
   font-size: 1.55rem !important;
@@ -914,8 +935,124 @@ footer {
   text-transform: uppercase;
 }
 
-.recordia-logo .MuiButton-startIcon {
+.recordia-logo::after {
+  position: absolute;
+  right: -4px;
+  bottom: 1px;
+  width: 28px;
+  height: 3px;
+  background: #f3bd3b;
+  content: '';
+  transform: rotate(-4deg);
+}
+
+.recordia-logo small {
+  align-self: flex-end;
+  margin-bottom: 5px;
   color: #f3bd3b;
+  font-family: 'DM Mono', monospace;
+  font-size: .48rem;
+  letter-spacing: .08em;
+}
+
+.recordia-logo .MuiButton-startIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  margin-right: 0;
+  place-items: center;
+  border: 2px solid #f3bd3b;
+  border-radius: 50%;
+  color: #f3bd3b;
+}
+
+.recordia-logo .MuiButton-startIcon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.recordia-nav-links {
+  margin-left: clamp(1rem, 3vw, 3rem);
+}
+
+.recordia-nav-link {
+  position: relative;
+  min-width: auto !important;
+  border-radius: 0 !important;
+  color: #fff8e8 !important;
+  font-family: 'DM Mono', monospace !important;
+  font-size: .78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase;
+}
+
+.recordia-nav-link::after {
+  position: absolute;
+  right: 12px;
+  bottom: 4px;
+  left: 12px;
+  height: 2px;
+  background: #f3bd3b;
+  content: '';
+  transform: scaleX(0);
+  transition: transform .2s ease;
+}
+
+.recordia-nav-link:hover::after,
+.recordia-nav-link[aria-current='page']::after {
+  transform: scaleX(1);
+}
+
+.recordia-nav-links .MuiIconButton-root {
+  position: relative;
+  margin: 0 .4rem;
+  border: 1px solid rgba(243, 189, 59, .55);
+  border-radius: 50%;
+  color: #fff8e8;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.recordia-nav-links .MuiIconButton-root:hover {
+  background: #9a4c2f;
+  transform: rotate(-8deg) scale(1.08);
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 2px solid #542d2d;
+  border-radius: 50%;
+  background: #f3bd3b;
+  color: #542d2d;
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  font-weight: 700;
+}
+
+.recordia-tagline {
+  position: relative;
+  padding-left: 1rem;
+  color: #e8d9ae !important;
+  font-family: 'DM Mono', monospace !important;
+  letter-spacing: .08em !important;
+}
+
+.recordia-tagline::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f3bd3b;
+  content: '';
+  transform: translateY(-50%);
 }
 
 .home-page {
