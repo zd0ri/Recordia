@@ -17,6 +17,12 @@ const schema = Yup.object({
   password: Yup.string().required('Password is required'),
 });
 
+const getPostLoginPath = (location, user) => (
+  user.role === 'admin'
+    ? '/admin/dashboard'
+    : location.state?.from?.pathname || '/profile'
+);
+
 export default function Login() {
   const { login, firebaseLogin } = useAuth();
   const navigate = useNavigate();
@@ -28,7 +34,7 @@ export default function Login() {
     try {
       const result = await signInWithFirebaseGoogle();
       const authData = await firebaseLogin(await result.user.getIdToken());
-      navigate(location.state?.from?.pathname || (authData.user.role === 'admin' ? '/admin/dashboard' : '/profile'), { replace: true });
+      navigate(getPostLoginPath(location, authData.user), { replace: true });
     } catch (submitError) {
       setError(
         submitError.response?.data?.message
@@ -48,7 +54,7 @@ export default function Login() {
     try {
       const result = await signInWithFirebaseFacebook();
       const authData = await firebaseLogin(await result.user.getIdToken());
-      navigate(location.state?.from?.pathname || (authData.user.role === 'admin' ? '/admin/dashboard' : '/profile'), { replace: true });
+      navigate(getPostLoginPath(location, authData.user), { replace: true });
     } catch (submitError) {
       setError(
         submitError.response?.data?.message
@@ -81,12 +87,12 @@ export default function Login() {
             try {
               const result = await signInWithFirebaseEmail(values.email, values.password);
               const authData = await firebaseLogin(await result.user.getIdToken());
-              navigate(location.state?.from?.pathname || (authData.user.role === 'admin' ? '/admin/dashboard' : '/profile'), { replace: true });
+              navigate(getPostLoginPath(location, authData.user), { replace: true });
               return;
             } catch (firebaseError) {
               if (firebaseError.response?.status === 403) throw firebaseError;
               const authData = await login(values.email, values.password);
-              navigate(location.state?.from?.pathname || (authData.user.role === 'admin' ? '/admin/dashboard' : '/profile'), { replace: true });
+              navigate(getPostLoginPath(location, authData.user), { replace: true });
             }
           } catch (submitError) {
             setError(submitError.response?.data?.message || 'Login failed');

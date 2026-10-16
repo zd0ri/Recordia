@@ -6,7 +6,9 @@ import MicExternalOnRoundedIcon from '@mui/icons-material/MicExternalOnRounded';
 import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded';
 import RateReviewRoundedIcon from '@mui/icons-material/RateReviewRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
-import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const links = [
   ['Dashboard', '/admin/dashboard', DashboardRoundedIcon],
@@ -20,6 +22,14 @@ const links = [
 
 export default function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <Stack className="admin-shell" direction={{ xs: 'column', md: 'row' }} spacing={3}>
       <Box className="admin-sidebar" component="nav">
@@ -42,6 +52,12 @@ export default function AdminLayout() {
         <Box className="admin-sidebar-note">
           <Typography variant="caption">ON AIR</Typography>
           <Typography>Backstage access enabled</Typography>
+          <Button className="admin-home-button" component={RouterLink} to="/" variant="outlined">
+            View homepage
+          </Button>
+          <Button className="admin-logout-button" onClick={handleLogout} startIcon={<LogoutRoundedIcon />} variant="outlined">
+            Logout
+          </Button>
         </Box>
       </Box>
       <Box className="admin-content" sx={{ flex: 1, minWidth: 0 }}><Outlet /></Box>

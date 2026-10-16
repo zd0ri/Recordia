@@ -5,7 +5,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AlbumOutlinedIcon from '@mui/icons-material/AlbumOutlined';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import api from '../api/axios';
@@ -13,6 +13,7 @@ import api from '../api/axios';
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { itemCount } = useCart();
+  const location = useLocation();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -73,6 +74,8 @@ export default function Navbar() {
     navigate(`/?${params.toString()}`);
   };
 
+  if (location.pathname.startsWith('/admin')) return null;
+
   return (
     <AppBar className="recordia-navbar" position="static" color="primary" elevation={0}>
       <Toolbar className="recordia-toolbar" sx={{ flexWrap: 'wrap', gap: { xs: 0.5, sm: 2 }, justifyContent: 'space-between', py: 1 }}>
@@ -108,6 +111,11 @@ export default function Navbar() {
               <TuneIcon />
             </IconButton>}
           </Box>
+          {user?.role === 'admin' && (
+            <Button className="recordia-nav-link control-room-link" color="inherit" component={RouterLink} to="/admin/dashboard">
+              Control room
+            </Button>
+          )}
           {user?.role !== 'admin' && <Tooltip title={user ? 'Your profile' : 'Log in'}>
             <IconButton className="recordia-icon-link" color="inherit" component={RouterLink} to={user ? '/profile' : '/login'} aria-label={user ? 'Your profile' : 'Log in'}>
               <PersonOutlineIcon />

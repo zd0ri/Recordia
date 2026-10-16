@@ -281,6 +281,32 @@ footer {
   font-family: 'Bowlby One SC', sans-serif;
 }
 
+.admin-home-button {
+  border-color: rgba(255, 247, 230, 0.55) !important;
+  color: var(--admin-cream) !important;
+  font-size: 0.7rem !important;
+  margin-top: 0.85rem !important;
+  width: 100%;
+}
+
+.admin-home-button:hover {
+  background: rgba(255, 247, 230, 0.12) !important;
+  border-color: var(--admin-cream) !important;
+}
+
+.admin-logout-button {
+  border-color: rgba(228, 84, 69, 0.75) !important;
+  color: #ff9a8d !important;
+  font-size: 0.7rem !important;
+  margin-top: 0.55rem !important;
+  width: 100%;
+}
+
+.admin-logout-button:hover {
+  background: rgba(228, 84, 69, 0.2) !important;
+  border-color: #ff9a8d !important;
+}
+
 .admin-page-heading {
   align-items: flex-start;
   display: flex;
@@ -296,6 +322,7 @@ footer {
 
 .admin-page-heading h2 {
   color: var(--admin-ink);
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
   font-size: clamp(2.1rem, 5vw, 4rem);
   line-height: 0.95;
   text-shadow: 3px 3px 0 rgba(242, 189, 76, 0.48);
