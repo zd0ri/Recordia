@@ -25,7 +25,7 @@ export default function Navbar() {
             : user ? <><Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/profile">Profile</Button><Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/orders" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Orders</Button><Button className="recordia-nav-link" color="inherit" onClick={() => { logout(); navigate('/'); }}>Logout</Button></>
               : <><Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/login">Login</Button><Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/register" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Register</Button></>}
         </Stack>
-        <Typography className="recordia-tagline" sx={{ display: { xs: 'none', md: 'block' } }} variant="caption">Curated sounds &amp; goods</Typography>
+        <Typography className="recordia-tagline" sx={{ display: { xs: 'none', md: 'block' } }} variant="caption">Vinyls / Grooves / Records</Typography>
       </Toolbar>
     </AppBar>
   );
