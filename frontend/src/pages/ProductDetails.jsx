@@ -35,6 +35,7 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [canReview, setCanReview] = useState(false);
+  const [reviewImage, setReviewImage] = useState(null);
   const { addToCart } = useCart();
   const { user } = useAuth();
 
@@ -137,8 +138,14 @@ export default function ProductDetails() {
             validationSchema={reviewSchema}
             onSubmit={async (values, { setSubmitting, setStatus }) => {
               try {
-                await api.put('/review', { ...values, productId: id });
+                const formData = new FormData();
+                formData.append('rating', values.rating);
+                formData.append('comment', values.comment);
+                formData.append('productId', id);
+                if (reviewImage) formData.append('image', reviewImage);
+                await api.put('/review', formData);
                 await refreshReviews();
+                setReviewImage(null);
                 setStatus('');
               } catch (requestError) {
                 setStatus(requestError.response?.data?.message || 'Unable to save review');
@@ -155,6 +162,10 @@ export default function ProductDetails() {
                   <Rating value={values.rating} onChange={(_, value) => setFieldValue('rating', value || 0)} />
                   {touched.rating && errors.rating && <Typography color="error" variant="caption">{errors.rating}</Typography>}
                   <Field as={TextField} fullWidth multiline minRows={3} name="comment" label="Comment" error={touched.comment && !!errors.comment} helperText={touched.comment && errors.comment} />
+                  <Button component="label" variant="outlined">
+                    {reviewImage ? reviewImage.name : 'Add review image'}
+                    <input hidden type="file" accept="image/png,image/jpeg" onChange={(event) => setReviewImage(event.target.files?.[0] || null)} />
+                  </Button>
                   <Stack direction="row" spacing={1}>
                     <Button disabled={isSubmitting} type="submit" variant="contained">{ownReview ? 'Update review' : 'Submit review'}</Button>
                     {ownReview && <Button color="error" disabled={isSubmitting} onClick={async () => { await api.delete('/review/me', { params: { productId: id } }); await refreshReviews(); }}>Delete review</Button>}

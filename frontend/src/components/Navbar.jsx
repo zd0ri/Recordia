@@ -15,11 +15,12 @@ export default function Navbar() {
         <Button color="inherit" component={RouterLink} startIcon={<AlbumOutlinedIcon />} to="/" sx={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '.08em' }}>Recordia</Button>
         <Stack direction="row" alignItems="center" flexWrap="wrap" justifyContent="flex-end" spacing={{ xs: 0, sm: 1 }} sx={{ flex: 1, minWidth: 0 }}>
           <Button color="inherit" component={RouterLink} to="/" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Home</Button>
-          <IconButton color="inherit" component={RouterLink} to="/cart" aria-label="Cart">
+          {user?.role !== 'admin' && <IconButton color="inherit" component={RouterLink} to="/cart" aria-label="Cart">
             <ShoppingCartOutlinedIcon />{itemCount > 0 && <Typography component="span" sx={{ fontSize: '.75rem', ml: -0.5 }}>{itemCount}</Typography>}
-          </IconButton>
-          {user?.role === 'admin' && <><Button color="inherit" component={RouterLink} to="/admin/dashboard">Admin</Button><Button color="inherit" component={RouterLink} to="/admin/users" sx={{ display: { xs: 'none', md: 'inline-flex' } }}>Users</Button><Button color="inherit" component={RouterLink} to="/admin/products" sx={{ display: { xs: 'none', md: 'inline-flex' } }}>Products</Button></>}
-          {user ? <><Button color="inherit" component={RouterLink} to="/profile">Profile</Button><Button color="inherit" component={RouterLink} to="/orders" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Orders</Button><Button color="inherit" onClick={() => { logout(); navigate('/'); }}>Logout</Button></> : <><Button color="inherit" component={RouterLink} to="/login">Login</Button><Button color="inherit" component={RouterLink} to="/register" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Register</Button></>}
+          </IconButton>}
+          {user?.role === 'admin' ? <Button color="inherit" onClick={() => { logout(); navigate('/'); }}>Logout</Button>
+            : user ? <><Button color="inherit" component={RouterLink} to="/profile">Profile</Button><Button color="inherit" component={RouterLink} to="/orders" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Orders</Button><Button color="inherit" onClick={() => { logout(); navigate('/'); }}>Logout</Button></>
+              : <><Button color="inherit" component={RouterLink} to="/login">Login</Button><Button color="inherit" component={RouterLink} to="/register" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Register</Button></>}
         </Stack>
         <Typography sx={{ display: { xs: 'none', md: 'block' }, opacity: .75 }} variant="caption">Curated sounds &amp; goods</Typography>
       </Toolbar>

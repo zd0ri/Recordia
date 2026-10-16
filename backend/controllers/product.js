@@ -4,7 +4,8 @@ const catchAsync = require('../utils/catchAsync');
 const {
     getImageSources,
     uploadProductImages,
-    deleteProductImages
+    deleteProductImages,
+    uploadReviewImage
 } = require('../utils/productImages');
 const Order = require('../models/order');
 const filterBadWords = require('../utils/filterBadWords');
@@ -219,6 +220,10 @@ exports.createProductReview = catchAsync(async (req, res) => {
         return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
+    if (typeof comment !== 'string' || !comment.trim()) {
+        return res.status(400).json({ success: false, message: 'Review comment is required' });
+    }
+
     const review = {
         user: req.user._id,
         name: req.user.name,
@@ -233,7 +238,13 @@ exports.createProductReview = catchAsync(async (req, res) => {
     if (existingReview) {
         existingReview.comment = review.comment;
         existingReview.rating = review.rating;
+        if (req.file) {
+            existingReview.image = await uploadReviewImage(req.file);
+        }
     } else {
+        if (req.file) {
+            review.image = await uploadReviewImage(req.file);
+        }
         product.reviews.push(review);
     }
 
@@ -329,14 +340,26 @@ exports.getAllReviews = catchAsync(async (req, res) => {
         { album_title: 1, reviews: 1 }
     ).populate('reviews.user', 'name email');
 
+    const search = typeof req.query.search === 'string' ? req.query.search.trim().toLowerCase() : '';
+    const minRating = Number(req.query.minRating);
+    const maxRating = Number(req.query.maxRating);
     const reviews = products.flatMap((product) => product.reviews.map((review) => ({
         _id: review._id,
         product: { _id: product._id, album_title: product.album_title },
         user: review.user,
         name: review.name,
         rating: review.rating,
-        comment: review.comment
-    })));
+        comment: review.comment,
+        image: review.image
+    }))).filter((review) => (
+        (!search
+            || String(review.comment || '').toLowerCase().includes(search)
+            || String(review.product?.album_title || '').toLowerCase().includes(search)
+            || String(review.name || '').toLowerCase().includes(search)
+            || String(review.user?.email || '').toLowerCase().includes(search))
+        && (!Number.isInteger(minRating) || review.rating >= minRating)
+        && (!Number.isInteger(maxRating) || review.rating <= maxRating)
+    ));
 
     res.status(200).json({ success: true, reviews });
 });

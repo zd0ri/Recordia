@@ -297,7 +297,10 @@ exports.allUsers = catchAsync(async (req, res, next) => {
             ]
         }
         : {};
-    const users = await User.find(filter).sort({ createdAt: -1 });
+    const users = await User.find({
+        ...filter,
+        _id: { $ne: req.user._id }
+    }).sort({ createdAt: -1 });
     res.status(200).json({
         success: true,
         users
@@ -346,8 +349,6 @@ exports.getUserDetails = catchAsync(async (req, res, next) => {
 exports.updateUser = catchAsync(async (req, res, next) => {
     const isSelf = req.params.id === req.user._id.toString();
     const newUserData = {
-        name: req.body.name,
-        email: req.body.email,
         role: req.body.role,
         isActive: req.body.isActive
     };
@@ -370,8 +371,13 @@ exports.updateUser = catchAsync(async (req, res, next) => {
         });
     }
 
-    user.name = newUserData.name;
-    user.email = newUserData.email;
+    if (!['user', 'admin'].includes(newUserData.role)
+        || typeof newUserData.isActive !== 'boolean') {
+        return res.status(400).json({
+            success: false,
+            message: 'Role and account status are required'
+        });
+    }
     user.role = newUserData.role;
     user.isActive = newUserData.isActive;
     await user.save();

@@ -53,6 +53,19 @@ class APIFeatures {
             };
         }
 
+        if (this.queryStr['reviews[gte]'] !== undefined) {
+            this.filters.numOfReviews = {
+                $gte: Number(this.queryStr['reviews[gte]'])
+            };
+        }
+
+        if (this.queryStr.review) {
+            this.filters['reviews.comment'] = {
+                $regex: this.queryStr.review.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+                $options: 'i'
+            };
+        }
+
         this.query = this.query.find(this.filters);
         return this;
     }

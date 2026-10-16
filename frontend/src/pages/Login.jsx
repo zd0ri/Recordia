@@ -25,8 +25,8 @@ export default function Login() {
     setError('');
     try {
       const result = await signInWithFirebaseGoogle();
-      await firebaseLogin(await result.user.getIdToken());
-      navigate(location.state?.from?.pathname || '/profile', { replace: true });
+      const authData = await firebaseLogin(await result.user.getIdToken());
+      navigate(location.state?.from?.pathname || (authData.user.role === 'admin' ? '/admin/dashboard' : '/profile'), { replace: true });
     } catch (submitError) {
       setError(
         submitError.response?.data?.message
@@ -45,8 +45,8 @@ export default function Login() {
     setError('');
     try {
       const result = await signInWithFirebaseFacebook();
-      await firebaseLogin(await result.user.getIdToken());
-      navigate(location.state?.from?.pathname || '/profile', { replace: true });
+      const authData = await firebaseLogin(await result.user.getIdToken());
+      navigate(location.state?.from?.pathname || (authData.user.role === 'admin' ? '/admin/dashboard' : '/profile'), { replace: true });
     } catch (submitError) {
       setError(
         submitError.response?.data?.message
@@ -71,12 +71,14 @@ export default function Login() {
           try {
             try {
               const result = await signInWithFirebaseEmail(values.email, values.password);
-              await firebaseLogin(await result.user.getIdToken());
+              const authData = await firebaseLogin(await result.user.getIdToken());
+              navigate(location.state?.from?.pathname || (authData.user.role === 'admin' ? '/admin/dashboard' : '/profile'), { replace: true });
+              return;
             } catch (firebaseError) {
               if (firebaseError.response?.status === 403) throw firebaseError;
-              await login(values.email, values.password);
+              const authData = await login(values.email, values.password);
+              navigate(location.state?.from?.pathname || (authData.user.role === 'admin' ? '/admin/dashboard' : '/profile'), { replace: true });
             }
-            navigate(location.state?.from?.pathname || '/profile', { replace: true });
           } catch (submitError) {
             setError(submitError.response?.data?.message || 'Login failed');
           } finally {

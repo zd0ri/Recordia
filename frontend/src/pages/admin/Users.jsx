@@ -50,12 +50,7 @@ export default function Users() {
 
   const openEdit = (row) => {
     setSelectedUser(row);
-    setForm({
-      name: row.name || '',
-      email: row.email || '',
-      role: row.role || 'user',
-      isActive: row.isActive !== false,
-    });
+    setForm({ role: row.role || 'user', isActive: row.isActive !== false });
   };
 
   const updateField = (field) => (event) => {
@@ -161,8 +156,6 @@ export default function Users() {
         <DialogTitle>Edit user</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField label="Name" value={form.name} onChange={updateField('name')} />
-            <TextField label="Email" type="email" value={form.email} onChange={updateField('email')} />
             <FormControl>
               <InputLabel id="user-role-label">Role</InputLabel>
               <Select

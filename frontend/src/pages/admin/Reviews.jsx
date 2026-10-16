@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Box, Button, Dialog, DialogActions, DialogTitle, Stack, Typography,
+  Box, Button, Dialog, DialogActions, DialogTitle, MenuItem, Select, Stack, TextField, Typography,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import api from '../../api/axios';
@@ -9,10 +9,11 @@ export default function Reviews() {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState('');
+  const [filters, setFilters] = useState({ search: '', minRating: '', maxRating: '' });
 
-  const loadReviews = async () => {
+  const loadReviews = async (nextFilters = filters) => {
     try {
-      const { data } = await api.get('/admin/reviews');
+      const { data } = await api.get('/admin/reviews', { params: nextFilters });
       setRows((data.reviews || []).map((review) => ({ ...review, id: review._id })));
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to load reviews');
@@ -40,6 +41,24 @@ export default function Reviews() {
     <Stack spacing={2}>
       <Typography variant="h3">Reviews</Typography>
       {error && <Typography color="error">{error}</Typography>}
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+        <TextField
+          size="small"
+          label="Search review, product, or user"
+          value={filters.search}
+          onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
+        />
+        <Select
+          size="small"
+          displayEmpty
+          value={filters.minRating}
+          onChange={(event) => setFilters((current) => ({ ...current, minRating: event.target.value }))}
+        >
+          <MenuItem value="">Any rating</MenuItem>
+          {[1, 2, 3, 4, 5].map((rating) => <MenuItem key={rating} value={rating}>{rating}+ stars</MenuItem>)}
+        </Select>
+        <Button variant="contained" onClick={() => loadReviews()}>Filter</Button>
+      </Stack>
       <Box sx={{ height: 620, width: '100%' }}>
         <DataGrid
           rows={rows}

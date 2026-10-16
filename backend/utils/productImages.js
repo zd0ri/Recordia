@@ -11,6 +11,19 @@ const uploadImage = (source) => {
     });
 };
 
+const uploadReviewImage = async (source) => {
+    const result = await cloudinary.v2.uploader.upload(source.path, {
+        folder: 'reviews',
+        width: 1200,
+        crop: 'limit'
+    });
+    await fs.unlink(source.path);
+    return {
+        public_id: result.public_id,
+        url: result.secure_url
+    };
+};
+
 const getImageSources = (req) => {
     const sources = [];
 
@@ -68,5 +81,6 @@ const deleteProductImages = async (images = []) => {
 module.exports = {
     getImageSources,
     uploadProductImages,
-    deleteProductImages
+    deleteProductImages,
+    uploadReviewImage
 };

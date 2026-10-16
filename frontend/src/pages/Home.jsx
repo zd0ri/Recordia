@@ -54,6 +54,13 @@ function FilterFields({ filters, artists, genres, updateFilter, resetFilters }) 
         </Select>
       </FormControl>
       <FormControl fullWidth>
+        <InputLabel id="review-filter-label">Reviews</InputLabel>
+        <Select labelId="review-filter-label" label="Reviews" value={filters.reviewCount} onChange={(event) => updateFilter('reviewCount', event.target.value)}>
+          <MenuItem value="">Any number of reviews</MenuItem>
+          {[1, 5, 10, 25].map((count) => <MenuItem key={count} value={count}>{count}+ reviews</MenuItem>)}
+        </Select>
+      </FormControl>
+      <FormControl fullWidth>
         <InputLabel id="artist-filter-label">Artist</InputLabel>
         <Select labelId="artist-filter-label" label="Artist" value={filters.artist} onChange={(event) => updateFilter('artist', event.target.value)}>
           <MenuItem value="">All artists</MenuItem>
@@ -88,6 +95,7 @@ export default function Home() {
     genre: searchParams.get('genre') || '',
     artist: searchParams.get('artist') || '',
     rating: searchParams.get('ratings[gte]') || '',
+    reviewCount: searchParams.get('reviews[gte]') || '',
     price: [
       Number(searchParams.get('price[gte]') || DEFAULT_RANGE[0]),
       Number(searchParams.get('price[lte]') || DEFAULT_RANGE[1]),
@@ -101,6 +109,7 @@ export default function Home() {
     filters.genre,
     filters.artist,
     filters.rating,
+    filters.reviewCount,
     filters.price.join(','),
   ].join('|');
 
@@ -130,6 +139,7 @@ export default function Home() {
           ...(filters.genre && { genre: filters.genre }),
           ...(filters.artist && { artist: filters.artist }),
           ...(filters.rating && { 'ratings[gte]': filters.rating }),
+          ...(filters.reviewCount && { 'reviews[gte]': filters.reviewCount }),
           ...(filters.price[0] > DEFAULT_RANGE[0] && { 'price[gte]': filters.price[0] }),
           ...(filters.price[1] < DEFAULT_RANGE[1] && { 'price[lte]': filters.price[1] }),
         };
@@ -155,7 +165,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [filterKey, filters.mode, filters.page, filters.artist, filters.genre, filters.keyword, filters.price, filters.rating]);
+  }, [filterKey, filters.mode, filters.page, filters.artist, filters.genre, filters.keyword, filters.price, filters.rating, filters.reviewCount]);
 
   useEffect(() => {
     if (filters.mode !== 'infinite' || !sentinelRef.current || loading || loadingMore || filters.page >= totalPages) {
@@ -180,8 +190,8 @@ export default function Home() {
       else next.delete('price[gte]');
       if (value[1] < DEFAULT_RANGE[1]) next.set('price[lte]', value[1]);
       else next.delete('price[lte]');
-    } else if (value) next.set(name === 'rating' ? 'ratings[gte]' : name, value);
-    else next.delete(name === 'rating' ? 'ratings[gte]' : name);
+    } else if (value) next.set(name === 'rating' ? 'ratings[gte]' : name === 'reviewCount' ? 'reviews[gte]' : name, value);
+    else next.delete(name === 'rating' ? 'ratings[gte]' : name === 'reviewCount' ? 'reviews[gte]' : name);
     next.set('page', '1');
     setSearchParams(next);
   };

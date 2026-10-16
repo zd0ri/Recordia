@@ -32,7 +32,7 @@ router.put('/admin/product/:id/stock', isAuthenticatedUser, authorizeRoles('admi
 router.delete('/admin/product/:id', isAuthenticatedUser, authorizeRoles('admin'), deleteProduct);
 router.delete('/admin/products/bulk', isAuthenticatedUser, authorizeRoles('admin'), bulkDeleteProducts);
 router.get('/admin/products', isAuthenticatedUser, authorizeRoles('admin'), getAdminProducts)
-router.put('/review', isAuthenticatedUser, createProductReview);
+router.put('/review', isAuthenticatedUser, upload.single('image'), createProductReview);
 router.get('/reviews', getProductReviews)
 router.get('/review/can-review', isAuthenticatedUser, canReview)
 router.delete('/review/me', isAuthenticatedUser, deleteOwnReview)

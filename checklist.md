@@ -26,9 +26,9 @@ implementation was found.
 - [x] ✅ Implemented — Price range filter (5 pts).
 - [x] ✅ Implemented — Category/genre filter (5 pts).
 - [x] ✅ Implemented — Minimum ratings filter (5 pts).
-- [ ] ⚠️ Partial — Review filter (5 pts): reviews are displayed and managed, but no review-count
-  or review-content filter was found.
-- **Current status: 15/20 pts implemented; add the review filter to reach 20/20.**
+- [x] ✅ Implemented — Review filters by minimum review count on the homepage and by content,
+  product, user, and rating in admin review management (5 pts).
+- **Current status: 20/20 pts implemented; perform a live filter test.**
 
 ### MP3 — Review ratings (20 pts)
 
@@ -85,7 +85,7 @@ implementation was found.
 | Requirement | Implemented |
 |---|---:|
 | MP1 | 20/20 |
-| MP2 | 15/20 |
+| MP2 | 20/20 |
 | MP3 | 20/20 |
 | Term test lab | 30/30 |
 | Unit 1 | 20/20 |
@@ -93,10 +93,23 @@ implementation was found.
 | Quiz 2 | 15/15 |
 | Quiz 3 | 15/15 maximum tier |
 | Quiz 4 | 15/15 |
-| **Total using maximum-tier scoring** | **170/175** |
+| **Total using maximum-tier scoring** | **175/175** |
 
-**Main remaining development task:** implement a review filter, then run the live/manual checks
-listed in the sections below. The total above is an implementation estimate, not a final grade.
+**Implementation status:** all listed rubric features are wired in source code. Remaining unchecked
+items below are environment setup or live/manual verification steps, not known missing features.
+
+## Other requirements — implementation status
+
+- [x] Order status cannot be changed after `Completed` or `Cancelled`.
+- [x] Cancelled orders cannot be modified, and stock is restored only when cancellation follows
+  stock deduction.
+- [x] Admin login redirects to the admin dashboard and uses an admin-only header with logout.
+- [x] Stock is deducted once when an order moves to `Processing`.
+- [x] Admin user management can change only role and active status; profile fields are not editable.
+- [x] The logged-in admin is excluded from the user list.
+- [x] Completed order details show links to review each purchased product.
+- [x] A user can submit one review per product, update it, and add a JPG/PNG review image.
+- [x] Review submission is limited to products in the user's completed orders.
 
 ## 1. Requirements
 
