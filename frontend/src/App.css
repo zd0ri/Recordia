@@ -1254,6 +1254,194 @@ footer {
   }
 }
 
+/* Authentication pages */
+.auth-card {
+  display: grid;
+  grid-template-columns: minmax(250px, .8fr) minmax(320px, 1fr);
+  overflow: hidden;
+  border: 2px solid #542d2d !important;
+  border-radius: 0 !important;
+  background: #fff8e8 !important;
+  box-shadow: 10px 10px 0 #542d2d !important;
+}
+
+.auth-art {
+  position: relative;
+  display: flex;
+  min-height: 610px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #9a4c2f;
+}
+
+.auth-art::before,
+.auth-art::after {
+  position: absolute;
+  border: 1px solid rgba(255, 248, 232, .55);
+  content: '';
+  transform: rotate(8deg);
+}
+
+.auth-art::before {
+  inset: 28px;
+}
+
+.auth-art::after {
+  inset: 44px;
+  transform: rotate(-7deg);
+}
+
+.auth-art-record {
+  position: relative;
+  z-index: 1;
+  width: min(26vw, 270px);
+  height: min(26vw, 270px);
+  border: 16px solid #211d1a;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #9a4c2f 0 17%, #d69a2d 18% 21%, transparent 22%),
+    repeating-radial-gradient(circle, #211d1a 0 2px, #302a24 3px 5px);
+  box-shadow: 8px 12px 0 rgba(84, 45, 45, .35);
+  animation: record-spin 7s linear infinite;
+}
+
+.auth-art-record::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #211d1a;
+  content: '';
+  transform: translate(-50%, -50%);
+}
+
+.auth-art-label {
+  position: absolute;
+  z-index: 2;
+  bottom: 42px;
+  left: 42px;
+  color: #fff8e8;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif !important;
+  font-size: 1.45rem !important;
+  line-height: 1 !important;
+  letter-spacing: .05em !important;
+  transform: rotate(-5deg);
+}
+
+.auth-art-label small {
+  color: #f3bd3b;
+  font-family: 'DM Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .08em;
+}
+
+.auth-form-panel {
+  align-self: center;
+  padding: clamp(2rem, 5vw, 4.5rem);
+}
+
+.auth-eyebrow {
+  color: #9a4c2f;
+  font-size: .72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .18em !important;
+}
+
+.auth-title {
+  margin: .5rem 0 .35rem !important;
+  color: #542d2d;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif !important;
+  font-size: clamp(2rem, 4vw, 3.1rem) !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+}
+
+.auth-subtitle {
+  color: #765c49;
+}
+
+.auth-form-panel .MuiTextField-root .MuiOutlinedInput-root {
+  border-radius: 0;
+  background: #fffdf7;
+}
+
+.auth-form-panel .MuiButton-contained {
+  min-height: 48px;
+  border-radius: 0;
+  background: #542d2d;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.auth-form-panel .MuiButton-contained:hover {
+  background: #9a4c2f;
+}
+
+.auth-divider {
+  color: #9a806d;
+  font-size: .72rem !important;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.social-button {
+  min-height: 44px !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+  letter-spacing: .05em !important;
+  text-transform: none !important;
+}
+
+.google-button {
+  border-color: #c9bba3 !important;
+  color: #542d2d !important;
+}
+
+.google-button .MuiSvgIcon-root {
+  color: #4285f4;
+}
+
+.facebook-button {
+  border-color: #1877f2 !important;
+  color: #1877f2 !important;
+}
+
+.auth-switch {
+  color: #765c49;
+  font-size: .82rem !important;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: #9a4c2f;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .auth-card {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-art {
+    min-height: 240px;
+  }
+
+  .auth-art-record {
+    width: 170px;
+    height: 170px;
+  }
+
+  .auth-art-label {
+    bottom: 18px;
+    left: 22px;
+    font-size: 1rem !important;
+  }
+}
+
 @keyframes recordia-spin {
   to { transform: rotate(360deg); }
 }

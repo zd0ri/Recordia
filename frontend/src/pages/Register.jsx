@@ -4,13 +4,17 @@ import * as Yup from 'yup';
 import {
   Alert,
   Avatar,
+  Box,
   Button,
+  Divider,
   Paper,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import GoogleIcon from '@mui/icons-material/Google';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   registerWithFirebaseEmail,
@@ -66,11 +70,15 @@ export default function Register() {
   };
 
   return (
-    <Paper sx={{ maxWidth: 520, mx: 'auto', p: { xs: 3, md: 5 } }}>
-      <Typography gutterBottom variant="h3">Create your account</Typography>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Join the Recordia collection.
-      </Typography>
+    <Paper className="auth-card register-card" sx={{ maxWidth: 1020, mx: 'auto' }}>
+      <Box className="auth-art" aria-hidden="true">
+        <div className="auth-art-record" />
+        <Typography className="auth-art-label">RECORDIA<br /><small>FIND YOUR FREQUENCY</small></Typography>
+      </Box>
+      <Box className="auth-form-panel">
+      <Typography className="auth-eyebrow">JOIN THE COLLECTION</Typography>
+      <Typography className="auth-title" gutterBottom variant="h3">Make some noise.</Typography>
+      <Typography className="auth-subtitle" sx={{ mb: 3 }}>Create your Recordia account and start collecting.</Typography>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       <Formik
         initialValues={{ name: '', email: '', password: '', confirmPassword: '', avatar: null }}
@@ -139,16 +147,19 @@ export default function Register() {
               <Button disabled={isSubmitting} type="submit" variant="contained">
                 {isSubmitting ? 'Creating account...' : 'Register'}
               </Button>
-              <Button disabled={isSubmitting} onClick={continueWithGoogle} type="button" variant="outlined">
-                Continue with Google
+              <Divider className="auth-divider">or continue with</Divider>
+              <Button className="social-button google-button" disabled={isSubmitting} onClick={continueWithGoogle} startIcon={<GoogleIcon />} type="button" variant="outlined">
+                Google
               </Button>
-              <Button disabled={isSubmitting} onClick={continueWithFacebook} type="button" variant="outlined">
-                Continue with Facebook
+              <Button className="social-button facebook-button" disabled={isSubmitting} onClick={continueWithFacebook} startIcon={<FacebookIcon />} type="button" variant="outlined">
+                Facebook
               </Button>
+              <Typography className="auth-switch">Already have an account? <RouterLink to="/login">Sign in</RouterLink></Typography>
             </Stack>
           </Form>
         )}
       </Formik>
+      </Box>
     </Paper>
   );
 }
