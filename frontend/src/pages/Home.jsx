@@ -1,94 +1,25 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Drawer,
-  FormControl,
+  Alert, Box, Button,
   Grid,
-  InputLabel,
-  MenuItem,
   Pagination,
-  Select,
   Skeleton,
-  Slider,
-  Stack, 
-  TextField,
+  Stack,
   Typography,
 } from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import { useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 
 const LIMIT = 12;
 const DEFAULT_RANGE = [0, 500];
 
-function FilterFields({ filters, artists, genres, updateFilter, resetFilters }) {
-  return (
-    <Stack spacing={2}>
-      <TextField
-        fullWidth
-        label="Search albums"
-        value={filters.keyword}
-        onChange={(event) => updateFilter('keyword', event.target.value)}
-      />
-      <Box>
-        <Typography gutterBottom>Price: ${filters.price[0]} - ${filters.price[1]}</Typography>
-        <Slider
-          min={0}
-          max={500}
-          step={5}
-          value={filters.price}
-          onChange={(_, value) => updateFilter('price', value)}
-          valueLabelDisplay="auto"
-        />
-      </Box>
-      <FormControl fullWidth>
-        <InputLabel id="genre-filter-label">Genre</InputLabel>
-        <Select labelId="genre-filter-label" label="Genre" value={filters.genre} onChange={(event) => updateFilter('genre', event.target.value)}>
-          <MenuItem value="">All genres</MenuItem>
-          {genres.map((genre) => <MenuItem key={genre._id} value={genre._id}>{genre.name}</MenuItem>)}
-        </Select>
-      </FormControl>
-      <FormControl fullWidth>
-        <InputLabel id="review-filter-label">Reviews</InputLabel>
-        <Select labelId="review-filter-label" label="Reviews" value={filters.reviewCount} onChange={(event) => updateFilter('reviewCount', event.target.value)}>
-          <MenuItem value="">Any number of reviews</MenuItem>
-          {[1, 5, 10, 25].map((count) => <MenuItem key={count} value={count}>{count}+ reviews</MenuItem>)}
-        </Select>
-      </FormControl>
-      <FormControl fullWidth>
-        <InputLabel id="artist-filter-label">Artist</InputLabel>
-        <Select labelId="artist-filter-label" label="Artist" value={filters.artist} onChange={(event) => updateFilter('artist', event.target.value)}>
-          <MenuItem value="">All artists</MenuItem>
-          {artists.map((artist) => <MenuItem key={artist._id} value={artist._id}>{artist.name}</MenuItem>)}
-        </Select>
-      </FormControl>
-      <FormControl fullWidth>
-        <InputLabel id="rating-filter-label">Minimum rating</InputLabel>
-        <Select labelId="rating-filter-label" label="Minimum rating" value={filters.rating} onChange={(event) => updateFilter('rating', event.target.value)}>
-          <MenuItem value="">Any rating</MenuItem>
-          {[4, 3, 2, 1].map((rating) => <MenuItem key={rating} value={rating}>{rating}+ stars</MenuItem>)}
-        </Select>
-      </FormControl>
-      <Button onClick={resetFilters}>Clear filters</Button>
-    </Stack>
-  );
-}
-
 export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [artists, setArtists] = useState([]);
-  const [genres, setGenres] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const filters = useMemo(() => ({
     keyword: searchParams.get('keyword') || '',
@@ -100,10 +31,8 @@ export default function Home() {
       Number(searchParams.get('price[gte]') || DEFAULT_RANGE[0]),
       Number(searchParams.get('price[lte]') || DEFAULT_RANGE[1]),
     ],
-    mode: searchParams.get('view') === 'infinite' ? 'infinite' : 'pagination',
     page: Number(searchParams.get('page') || 1),
   }), [searchParams]);
-  const sentinelRef = useRef(null);
   const filterKey = [
     filters.keyword,
     filters.genre,
@@ -114,23 +43,9 @@ export default function Home() {
   ].join('|');
 
   useEffect(() => {
-    const loadOptions = async () => {
-      try {
-        const [artistResponse, genreResponse] = await Promise.all([api.get('/artists'), api.get('/genres')]);
-        setArtists(artistResponse.data.artists || []);
-        setGenres(genreResponse.data.genres || []);
-      } catch (requestError) {
-        setError(requestError.response?.data?.message || 'Unable to load filters');
-      }
-    };
-    loadOptions();
-  }, []);
-
-  useEffect(() => {
     let cancelled = false;
     const loadProducts = async () => {
-      if (filters.mode === 'infinite' && filters.page > 1) setLoadingMore(true);
-      else setLoading(true);
+      setLoading(true);
       try {
         const params = {
           page: filters.page,
@@ -145,11 +60,7 @@ export default function Home() {
         };
         const { data } = await api.get('/products', { params });
         if (!cancelled) {
-          setProducts((current) => (
-            filters.mode === 'infinite' && filters.page > 1
-              ? [...current, ...(data.products || [])]
-              : data.products || []
-          ));
+          setProducts(data.products || []);
           setTotalPages(data.totalPages || 0);
         }
       } catch (requestError) {
@@ -157,7 +68,6 @@ export default function Home() {
       } finally {
         if (!cancelled) {
           setLoading(false);
-          setLoadingMore(false);
         }
       }
     };
@@ -165,53 +75,28 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [filterKey, filters.mode, filters.page, filters.artist, filters.genre, filters.keyword, filters.price, filters.rating, filters.reviewCount]);
-
-  useEffect(() => {
-    if (filters.mode !== 'infinite' || !sentinelRef.current || loading || loadingMore || filters.page >= totalPages) {
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      const next = new URLSearchParams(searchParams);
-      next.set('page', String(filters.page + 1));
-      setSearchParams(next);
-    }, { rootMargin: '300px' });
-
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [filters.mode, filters.page, loading, loadingMore, totalPages, searchParams, setSearchParams]);
+  }, [filterKey, filters.page, filters.artist, filters.genre, filters.keyword, filters.price, filters.rating, filters.reviewCount]);
 
   const updateFilter = (name, value) => {
     const next = new URLSearchParams(searchParams);
-    if (name === 'price') {
-      if (value[0] > DEFAULT_RANGE[0]) next.set('price[gte]', value[0]);
-      else next.delete('price[gte]');
-      if (value[1] < DEFAULT_RANGE[1]) next.set('price[lte]', value[1]);
-      else next.delete('price[lte]');
-    } else if (value) next.set(name === 'rating' ? 'ratings[gte]' : name === 'reviewCount' ? 'reviews[gte]' : name, value);
+    if (value) next.set(name === 'rating' ? 'ratings[gte]' : name === 'reviewCount' ? 'reviews[gte]' : name, value);
     else next.delete(name === 'rating' ? 'ratings[gte]' : name === 'reviewCount' ? 'reviews[gte]' : name);
     next.set('page', '1');
     setSearchParams(next);
   };
 
-  const resetFilters = () => setSearchParams(
-    filters.mode === 'infinite'
-      ? { page: '1', view: 'infinite' }
-      : { page: '1' },
-  );
-
-  const changeMode = (event) => {
-    const next = new URLSearchParams(searchParams);
-    const mode = event.target.value;
-    if (mode === 'infinite') next.set('view', 'infinite');
-    else next.delete('view');
-    next.set('page', '1');
-    setSearchParams(next);
-  };
-
   const featuredProduct = products[0];
+  const featuredReleases = products.slice(0, 6);
+  const genreTiles = [
+    { name: 'Jazz', count: '230+ titles' },
+    { name: 'Rock', count: '540+ titles' },
+    { name: 'Soul / Funk', count: '310+ titles' },
+    { name: 'Hip Hop', count: '280+ titles' },
+    { name: 'Indie / Alt', count: '420+ titles' },
+    { name: 'Electronic', count: '190+ titles' },
+    { name: 'World', count: '160+ titles' },
+  ];
+  const gearProducts = products.slice(6, 11);
 
   return (
     <Stack className="home-page" spacing={5}>
@@ -222,7 +107,7 @@ export default function Home() {
           <Typography className="hero-description">Curated sounds, timeless sleeves, and the warm crackle of music made tangible.</Typography>
           <Stack direction="row" flexWrap="wrap" gap={1.5}>
             <Button className="hero-primary" component="a" href="#collection" variant="contained">Explore records</Button>
-            <Button className="hero-secondary" onClick={() => updateFilter('genre', genres[0]?._id || '')} variant="outlined">Browse collections</Button>
+            <Button className="hero-secondary" component="a" href="#collection" variant="outlined">Browse collections</Button>
           </Stack>
         </Box>
         <Box className="hero-art">
@@ -232,44 +117,91 @@ export default function Home() {
         </Box>
       </Box>
       {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
+      <Box className="genre-band" id="genres">
+        <Box className="band-heading">
+          <Typography className="eyebrow">SHOP BY GENRE</Typography>
+          <Typography variant="h2">Find your sound.</Typography>
+        </Box>
+        <Button component={RouterLink} to="/genres" className="band-link">View all genres →</Button>
+        <Box className="genre-tiles">
+          {genreTiles.map((genre, index) => (
+            <Button key={genre.name} className="genre-tile" component={RouterLink} to={`/genres?keyword=${encodeURIComponent(genre.name)}`}>
+              <Box className="genre-image" sx={{ backgroundImage: `url(${products[index]?.images?.[0]?.url || 'https://placehold.co/160x160?text=Vinyl'})` }} />
+              <strong>{genre.name}</strong>
+              <small>{genre.count}</small>
+            </Button>
+          ))}
+        </Box>
+      </Box>
+      <Box className="featured-band">
+        <Box className="band-heading">
+          <Typography className="eyebrow">FEATURED RELEASES</Typography>
+          <Typography variant="h2">Handpicked heat.</Typography>
+        </Box>
+        <Button component="a" href="#collection" className="band-link">View all →</Button>
+        <Grid container spacing={1.5} className="featured-grid">
+          {featuredReleases.map((product) => (
+            <Grid key={product._id} size={{ xs: 6, sm: 4, md: 2 }}>
+              <Box className="featured-release">
+                <Box component="img" src={product.images?.[0]?.url || 'https://placehold.co/300x300?text=Recordia'} alt={product.album_title} />
+                <Typography className="release-name">{product.album_title}</Typography>
+                <Typography className="release-artist">{product.artist?.name}</Typography>
+                <Typography className="release-price">${Number(product.price || 0).toFixed(2)}</Typography>
+                <Button component={RouterLink} to={`/products/${product._id}`}>View record</Button>
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+      <Box className="gear-band">
+        <Box className="gear-intro">
+          <Typography className="eyebrow">AUDIO GEAR & ACCESSORIES</Typography>
+          <Typography variant="h2">Spin it right.</Typography>
+          <Typography>Quality gear makes all the difference.</Typography>
+          <Button component={RouterLink} to="/collections/accessories">Shop gear</Button>
+        </Box>
+        {gearProducts.map((product) => (
+          <Box className="gear-item" key={product._id}>
+            <Box component="img" src={product.images?.[0]?.url || 'https://placehold.co/300x220?text=Gear'} alt={product.name || product.album_title} />
+            <Typography>{product.name || product.album_title}</Typography>
+            <strong>${Number(product.price || 0).toFixed(2)}</strong>
+          </Box>
+        ))}
+      </Box>
+      <Box className="reviews-band">
+        <Box className="band-heading">
+          <Typography className="eyebrow">COLLECTOR FAVORITES</Typography>
+          <Typography variant="h2">What our collectors say.</Typography>
+        </Box>
+        <Grid container spacing={2}>
+          {[
+            'Fast shipping, careful packaging, and the vinyl sounds incredible. Recordia is my go-to record store, hands down.',
+            'Beautiful pressings, great prices, and real music lovers behind the scenes. You can feel the passion in every order.',
+            'The best place to discover new music and find classics I have been hunting for. Highly recommended!',
+          ].map((quote, index) => <Grid key={quote} size={{ xs: 12, md: 4 }}><Box className="review-quote"><span>“</span><Typography>{quote}</Typography><strong>— {['Jason D.', 'Melissa R.', 'David L.'][index]}</strong><small>Verified buyer</small></Box></Grid>)}
+        </Grid>
+      </Box>
+      <Box className="drops-band">
+        <Box><Typography className="eyebrow">LIMITED PRESSINGS</Typography><Typography variant="h2">Limited drops.<br />Don’t miss out.</Typography></Box>
+        <Box className="drop-count"><strong>03</strong><small>DAYS</small><strong>14</strong><small>HRS</small><strong>27</strong><small>MINS</small><strong>52</strong><small>SECS</small></Box>
+        <Button component={RouterLink} to="/collections/new-arrivals">Explore drops</Button>
+      </Box>
       <Box className="section-heading" id="collection">
         <Box><Typography className="eyebrow">THE RECORD ROOM</Typography><Typography variant="h2">Browse the collection</Typography></Box>
         <Typography className="section-note">Handpicked for curious ears.</Typography>
       </Box>
-      <FormControl size="small" sx={{ maxWidth: 220 }}>
-        <InputLabel id="display-mode-label">Display mode</InputLabel>
-        <Select labelId="display-mode-label" label="Display mode" value={filters.mode} onChange={changeMode}>
-          <MenuItem value="pagination">Pagination</MenuItem>
-          <MenuItem value="infinite">Infinite scroll</MenuItem>
-        </Select>
-      </FormControl>
-      <Button startIcon={<FilterListIcon />} sx={{ alignSelf: 'flex-start', display: { md: 'none' } }} variant="outlined" onClick={() => setDrawerOpen(true)}>
-        Filters
-      </Button>
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 3 }} sx={{ display: { xs: 'none', md: 'block' } }}>
-          <Card sx={{ p: 2 }}><CardContent><Typography gutterBottom variant="h5">Filters</Typography><FilterFields filters={filters} artists={artists} genres={genres} updateFilter={updateFilter} resetFilters={resetFilters} /></CardContent></Card>
-        </Grid>
-        <Grid size={{ xs: 12, md: 9 }}>
+        <Grid size={12}>
           {loading ? (
             <Grid container spacing={2}>{Array.from({ length: 6 }).map((_, index) => <Grid key={index} size={{ xs: 12, sm: 6, lg: 4 }}><Skeleton variant="rectangular" height={330} /><Skeleton width="70%" /><Skeleton width="45%" /></Grid>)}</Grid>
           ) : products.length ? (
             <>
               <Grid container spacing={2}>{products.map((product) => <Grid key={product._id} size={{ xs: 12, sm: 6, lg: 4 }}><ProductCard product={product} /></Grid>)}</Grid>
-              {filters.mode === 'pagination' && totalPages > 1 && <Pagination count={totalPages} page={filters.page} onChange={(_, page) => updateFilter('page', page)} sx={{ display: 'flex', justifyContent: 'center', mt: 4 }} />}
-              {filters.mode === 'infinite' && (
-                <Box ref={sentinelRef} sx={{ minHeight: 56, py: 2, textAlign: 'center' }}>
-                  {loadingMore && <Typography color="text.secondary">Loading more products...</Typography>}
-                  {!loadingMore && filters.page >= totalPages && <Typography color="text.secondary">You have reached the end of the collection.</Typography>}
-                </Box>
-              )}
+              {totalPages > 1 && <Pagination count={totalPages} page={filters.page} onChange={(_, page) => updateFilter('page', page)} sx={{ display: 'flex', justifyContent: 'center', mt: 4 }} />}
             </>
           ) : <Typography sx={{ py: 8, textAlign: 'center' }} variant="h5">No products match these filters.</Typography>}
         </Grid>
       </Grid>
-      <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Box sx={{ p: 3, width: 300 }}><Typography gutterBottom variant="h5">Filters</Typography><FilterFields filters={filters} artists={artists} genres={genres} updateFilter={updateFilter} resetFilters={() => { resetFilters(); setDrawerOpen(false); }} /></Box>
-      </Drawer>
     </Stack>
   );
 }

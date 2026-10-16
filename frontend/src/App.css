@@ -901,23 +901,24 @@ footer {
 /* Homepage record-shop direction */
 .recordia-navbar {
   position: relative;
-  background: #542d2d !important;
-  border-bottom: 5px solid #d69a2d;
-  box-shadow: 0 4px 0 rgba(84, 45, 45, 0.14) !important;
+  background: #171514 !important;
+  border-bottom: 1px solid rgba(243, 189, 59, .45);
+  box-shadow: 0 5px 18px rgba(33, 29, 26, .22) !important;
 }
 
 .recordia-navbar::after {
   position: absolute;
   right: 0;
-  bottom: -5px;
+  bottom: -1px;
   left: 0;
   height: 2px;
-  background: repeating-linear-gradient(90deg, #f3bd3b 0 10px, transparent 10px 18px);
+  background: repeating-linear-gradient(90deg, #f3bd3b 0 8px, transparent 8px 16px);
   content: '';
 }
 
 .recordia-toolbar {
-  min-height: 76px !important;
+  min-height: 70px !important;
+  flex-wrap: nowrap !important;
   padding-right: clamp(1rem, 5vw, 5rem) !important;
   padding-left: clamp(1rem, 5vw, 5rem) !important;
 }
@@ -972,7 +973,50 @@ footer {
 }
 
 .recordia-nav-links {
+  position: relative;
+  z-index: 2;
+  flex-wrap: nowrap !important;
   margin-left: clamp(1rem, 3vw, 3rem);
+}
+
+.recordia-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 42px;
+  margin: 0 .25rem;
+  border-bottom: 1px solid transparent;
+  transition: width .25s ease, border-color .25s ease;
+}
+
+.recordia-search.is-open {
+  width: min(320px, calc(100vw - 24px));
+  border-bottom-color: rgba(243, 189, 59, .8);
+}
+
+.recordia-search-input {
+  width: 0;
+  color: #fff8e8 !important;
+  font-family: 'DM Mono', monospace !important;
+  font-size: .72rem !important;
+  transition: width .25s ease;
+}
+
+.recordia-search.is-open .recordia-search-input {
+  width: calc(100% - 84px) !important;
+}
+
+.recordia-search.is-open .recordia-search-input input {
+  width: 100% !important;
+}
+
+.recordia-search-input input {
+  padding: .35rem 0;
+}
+
+.recordia-search-input input::placeholder {
+  color: #e8d9ae;
+  opacity: .7;
 }
 
 .recordia-nav-link {
@@ -981,10 +1025,10 @@ footer {
   border-radius: 0 !important;
   color: #fff8e8 !important;
   font-family: 'DM Mono', monospace !important;
-  font-size: .78rem !important;
-  font-weight: 700 !important;
-  letter-spacing: .08em !important;
-  text-transform: uppercase;
+  font-size: .74rem !important;
+  font-weight: 500 !important;
+  letter-spacing: .06em !important;
+  text-transform: none;
 }
 
 .recordia-nav-link::after {
@@ -1011,6 +1055,90 @@ footer {
   border-radius: 50%;
   color: #fff8e8;
   transition: background .2s ease, transform .2s ease;
+}
+
+.recordia-icon-link {
+  border: 0 !important;
+  margin: 0 .15rem !important;
+  color: #fff8e8 !important;
+}
+
+.recordia-search .recordia-icon-link {
+  flex: 0 0 40px;
+}
+
+.recordia-filter-button {
+  flex: 0 0 32px !important;
+  width: 32px;
+  height: 32px;
+  margin: 0 !important;
+  border: 0 !important;
+  color: #f3bd3b !important;
+}
+
+.search-suggestions {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(320px, 80vw);
+  padding: .45rem;
+  border: 2px solid #542d2d;
+  background: #fff8e8;
+  box-shadow: 6px 6px 0 #542d2d;
+}
+
+.search-suggestions .MuiButton-root {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: .55rem .7rem;
+  color: #542d2d;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  text-align: left;
+  text-transform: none;
+}
+
+.search-suggestions .MuiButton-root:hover {
+  background: #e8d9ae;
+}
+
+.search-suggestions span {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-suggestions small {
+  margin-left: .6rem;
+  color: #9a4c2f;
+  white-space: nowrap;
+}
+
+.navbar-filters {
+  width: min(280px, 80vw);
+  padding: 1.2rem;
+  background: #fff8e8;
+}
+
+.navbar-filters .MuiSelect-select {
+  min-width: 220px;
+}
+
+.auth-links {
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+  margin-left: .25rem;
+}
+
+.auth-links .MuiButton-root {
+  flex-shrink: 0;
+  pointer-events: auto;
+  white-space: nowrap;
 }
 
 .recordia-nav-links .MuiIconButton-root:hover {
@@ -1267,6 +1395,512 @@ footer {
 .section-note {
   color: #9a4c2f;
   font-style: italic;
+}
+
+.recordia-story {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2rem, 5vw, 4rem);
+  border: 2px solid #542d2d;
+  background: #542d2d;
+  color: #fff8e8;
+  box-shadow: 8px 8px 0 #d69a2d;
+}
+
+.recordia-story::after {
+  position: absolute;
+  right: 8%;
+  bottom: -70px;
+  width: 190px;
+  height: 190px;
+  border: 22px solid #9a4c2f;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, #211d1a 0 2px, #302a24 3px 5px);
+  content: '';
+  opacity: .8;
+}
+
+.recordia-story h2 {
+  position: relative;
+  z-index: 1;
+  margin: .45rem 0;
+  color: #f3bd3b;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.recordia-story > p:last-child {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  color: #e8d9ae;
+}
+
+.genre-band, .featured-band, .reviews-band { padding: 1.2rem 1.4rem 1.5rem; background: #fff8e8; border-top: 1px solid rgba(84,45,45,.18); }
+.artist-band { padding: 1.2rem 1.4rem 1.5rem; background: #e8d9ae; border-top: 1px solid rgba(84,45,45,.18); }
+.band-heading { display: inline-block; }
+.band-heading h2 { margin: .15rem 0 1rem; color: #542d2d; font-family: 'Bowlby One SC','Arial Black',sans-serif; font-size: clamp(1.5rem,3vw,2.2rem); letter-spacing: -.04em; }
+.band-link { float: right; margin-top: 1rem !important; color: #542d2d !important; font-family: 'DM Mono',monospace !important; font-size: .68rem !important; text-transform: uppercase !important; }
+.genre-tiles { display: grid; grid-template-columns: repeat(7,1fr); clear: both; gap: .7rem; }
+.genre-tile { display: flex !important; min-width: 0; flex-direction: column; align-items: center; padding: .25rem !important; color: #542d2d !important; text-transform: none !important; }
+.genre-image { width: clamp(64px,9vw,104px); aspect-ratio: 1; border: 3px solid #542d2d; border-radius: 50%; background-position: center; background-size: cover; box-shadow: 3px 3px 0 #d69a2d; transition: transform .2s ease; }
+.genre-tile:hover .genre-image { transform: rotate(-8deg) scale(1.06); }
+.genre-tile strong { margin-top: .55rem; font-family: 'DM Mono',monospace; font-size: .66rem; text-transform: uppercase; }
+.genre-tile small { color: #9a4c2f; font-family: 'DM Mono',monospace; font-size: .52rem; }
+.artist-tiles { display: grid; grid-template-columns: repeat(7,1fr); clear: both; gap: .7rem; }
+.artist-tile { display: flex !important; min-width: 0; flex-direction: column; align-items: center; padding: .25rem !important; color: #542d2d !important; text-transform: none !important; }
+.artist-image { width: clamp(64px,9vw,104px); aspect-ratio: 1; border: 3px solid #542d2d; border-radius: 50%; background-position: center; background-size: cover; box-shadow: 3px 3px 0 #9a4c2f; filter: saturate(.75); transition: transform .2s ease, filter .2s ease; }
+.artist-tile:hover .artist-image { transform: rotate(8deg) scale(1.06); filter: saturate(1.1); }
+.artist-tile strong { margin-top: .55rem; font-family: 'DM Mono',monospace; font-size: .66rem; text-transform: uppercase; }
+.artist-tile small { color: #9a4c2f; font-family: 'DM Mono',monospace; font-size: .52rem; }
+.featured-grid { clear: both; }
+.featured-release { height: 100%; padding-bottom: .45rem; background: #f5efdf; transition: transform .2s ease; }
+.featured-release:hover { transform: translateY(-4px); }
+.featured-release img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.release-name, .release-artist, .release-price, .featured-release .MuiButton-root { display: block; margin-right: .55rem !important; margin-left: .55rem !important; }
+.release-name { margin-top: .45rem !important; color: #542d2d; font-family: 'DM Mono',monospace !important; font-size: .63rem !important; font-weight: 700 !important; }
+.release-artist { color: #684a39; font-size: .62rem !important; }
+.release-price { color: #9a4c2f; font-family: 'DM Mono',monospace; font-size: .68rem; font-weight: 700; }
+.featured-release .MuiButton-root, .shop-story-band .MuiButton-root { min-width: 0; padding: .15rem 0 !important; color: #9a4c2f !important; font-family: 'DM Mono',monospace !important; font-size: .57rem !important; text-transform: uppercase !important; }
+.gear-band { display: grid; grid-template-columns: 1.2fr repeat(5,1fr); gap: .35rem; padding: .8rem; background: #211d1a; color: #fff8e8; }
+.gear-intro { display: flex; flex-direction: column; justify-content: center; padding: 1rem; }
+.gear-intro h2 { margin: .35rem 0 .6rem; color: #fff8e8; font-family: 'Bowlby One SC','Arial Black',sans-serif; font-size: clamp(1.4rem,2.4vw,2rem); }
+.gear-intro p { font-size: .78rem; }
+.gear-intro .MuiButton-root { align-self: flex-start; margin-top: .55rem; background: #d69a2d; border-radius: 0; color: #211d1a; font-size: .6rem; font-weight: 700; }
+.gear-item { min-width: 0; padding: .3rem; border-left: 1px solid rgba(255,248,232,.3); }
+.gear-item img { width: 100%; aspect-ratio: 1.15; object-fit: cover; }
+.gear-item p, .gear-item strong { display: block; margin: .3rem .2rem 0; overflow: hidden; font-family: 'DM Mono',monospace; font-size: .55rem; text-overflow: ellipsis; white-space: nowrap; }
+.gear-item strong { color: #f3bd3b; }
+.shop-story-band { display: grid; grid-template-columns: 1fr 1.4fr .7fr; align-items: center; gap: 1.5rem; padding: 0; background: #e8d9ae; }
+.story-image { min-height: 180px; background-position: center; background-size: cover; filter: sepia(.25); }
+.story-copy { padding: 1.2rem 0; }
+.story-copy h2 { margin: .3rem 0 .5rem; color: #542d2d; font-family: 'Bowlby One SC','Arial Black',sans-serif; font-size: clamp(1.3rem,3vw,2.1rem); }
+.story-copy p { max-width: 500px; color: #684a39; font-size: .78rem; line-height: 1.55; }
+.story-stamp { display: grid; width: 130px; height: 130px; margin: auto; place-items: center; border: 2px solid #542d2d; border-radius: 50%; color: #542d2d; font-family: 'DM Mono',monospace; font-size: .52rem; text-align: center; transform: rotate(8deg); }
+.story-stamp strong { font-family: 'Bowlby One SC','Arial Black',sans-serif; font-size: .8rem; }
+.review-quote { position: relative; height: 100%; padding: 1rem 1.2rem 1rem 2.5rem; background: #f5efdf; color: #684a39; }
+.review-quote > span { position: absolute; top: .5rem; left: .8rem; color: #9a4c2f; font-family: Georgia,serif; font-size: 3rem; line-height: 1; }
+.review-quote p { font-size: .72rem; line-height: 1.5; }
+.review-quote strong, .review-quote small { display: block; font-family: 'DM Mono',monospace; font-size: .59rem; }
+.review-quote small { color: #9a4c2f; }
+.drops-band { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.2rem 1.5rem; background: #c94f0d; color: #fff8e8; }
+.drops-band h2 { margin: .25rem 0 0; color: #fff8e8; font-family: 'Bowlby One SC','Arial Black',sans-serif; font-size: clamp(1.5rem,3vw,2.4rem); line-height: .95; }
+.drops-band .eyebrow { color: #f3bd3b; }
+.drop-count { display: flex; align-items: baseline; gap: .35rem; font-family: 'DM Mono',monospace; }
+.drop-count strong { font-size: 1.8rem; }
+.drop-count small { margin-right: .7rem; font-size: .5rem; }
+.drops-band .MuiButton-root { border: 1px solid #fff8e8; border-radius: 0; color: #fff8e8; font-family: 'DM Mono',monospace; font-size: .6rem; }
+
+.collection-page {
+  padding-bottom: 2rem;
+}
+
+.taxonomy-page,
+.about-page {
+  padding-bottom: 2rem;
+}
+
+.taxonomy-hero {
+  padding: clamp(2rem, 6vw, 5rem);
+  border: 2px solid #542d2d;
+  background: #e8d9ae;
+  box-shadow: 9px 9px 0 #542d2d;
+}
+
+.taxonomy-hero h1 {
+  max-width: 720px;
+  margin: .5rem 0 1rem;
+  color: #542d2d;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  line-height: .92;
+  text-transform: uppercase;
+}
+
+.taxonomy-hero p:last-child {
+  max-width: 540px;
+  color: #684a39;
+}
+
+.artists-page .taxonomy-hero {
+  background: #d94b2b;
+}
+
+.artists-page .taxonomy-hero h1,
+.artists-page .taxonomy-hero p:last-child,
+.artists-page .taxonomy-hero .eyebrow {
+  color: #fff8e8;
+}
+
+.genres-page .taxonomy-hero {
+  background: #e8d9ae;
+}
+
+.taxonomy-directory-heading {
+  border-bottom: 2px solid #542d2d;
+}
+
+.taxonomy-directory-heading h2 {
+  margin: .3rem 0 .8rem;
+  color: #542d2d;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+}
+
+.taxonomy-directory {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: .7rem;
+}
+
+.taxonomy-directory .MuiButton-root {
+  display: flex;
+  min-height: 80px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  border: 2px solid #542d2d;
+  border-radius: 0;
+  background: #fff8e8;
+  color: #542d2d;
+  text-align: left;
+  text-transform: none;
+}
+
+.taxonomy-directory .MuiButton-root.is-selected,
+.taxonomy-directory .MuiButton-root:hover {
+  background: #9a4c2f;
+  color: #fff8e8;
+}
+
+.artist-directory .MuiButton-root {
+  min-height: 120px;
+  justify-content: flex-end;
+  border-radius: 18px;
+  background: #211d1a;
+  color: #fff8e8;
+  box-shadow: 5px 5px 0 #d69a2d;
+}
+
+.artist-directory .MuiButton-root.is-selected,
+.artist-directory .MuiButton-root:hover {
+  background: #4a9b77;
+}
+
+.genre-directory .MuiButton-root {
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #d69a2d;
+}
+
+.taxonomy-card-mark {
+  margin-bottom: .5rem;
+  color: #f3bd3b;
+  font-size: 1.4rem;
+}
+
+.taxonomy-directory span {
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.taxonomy-directory small {
+  margin-top: .3rem;
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+}
+
+.taxonomy-results {
+  padding-top: 1rem;
+}
+
+.about-hero {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  overflow: hidden;
+  border: 2px solid #211d1a;
+  background: #d94b2b;
+  box-shadow: 9px 9px 0 #211d1a;
+}
+
+.about-hero-copy {
+  align-self: center;
+  padding: clamp(2rem, 6vw, 5rem);
+}
+
+.about-hero-copy h1 {
+  margin: .6rem 0 1rem;
+  color: #211d1a;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-size: clamp(2.2rem, 5vw, 4.8rem);
+  line-height: .93;
+  text-transform: uppercase;
+}
+
+.about-hero-copy p:last-child {
+  max-width: 500px;
+  color: #fff8e8;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.about-hero-art {
+  min-height: 420px;
+  background:
+    radial-gradient(circle at 50% 40%, #f3bd3b 0 18%, transparent 18.5%),
+    repeating-linear-gradient(120deg, transparent 0 22px, rgba(33,29,26,.35) 23px 27px),
+    #4a9b77;
+  display: grid;
+  place-items: center;
+  transform: rotate(2deg) scale(1.08);
+}
+
+.about-hero-art span {
+  padding: 1.2rem;
+  border: 3px solid #211d1a;
+  background: #fff8e8;
+  color: #211d1a;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-size: 1.2rem;
+  text-align: center;
+  transform: rotate(-8deg);
+}
+
+.about-intro {
+  max-width: 760px;
+  margin: 1rem auto 0;
+  text-align: center;
+}
+
+.about-intro h2 {
+  margin: .4rem 0 .8rem;
+  color: #542d2d;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1;
+}
+
+.about-intro p:last-child {
+  color: #684a39;
+  line-height: 1.7;
+}
+
+.about-cards {
+  display: grid;
+  gap: 1rem;
+}
+
+.about-card {
+  display: grid;
+  grid-template-columns: .8fr 1.2fr;
+  min-height: 190px;
+  overflow: hidden;
+  border: 2px solid #211d1a;
+  border-radius: 18px;
+  background: #fff8e8;
+  box-shadow: 5px 5px 0 #211d1a;
+}
+
+.about-card--reverse {
+  grid-template-columns: 1.2fr .8fr;
+}
+
+.about-card--reverse .about-card-art {
+  order: 2;
+}
+
+.about-card > div:last-child {
+  padding: 1.4rem;
+}
+
+.about-card h3 {
+  margin: 0 0 .5rem;
+  color: #542d2d;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-size: 1.5rem;
+}
+
+.about-card p {
+  color: #684a39;
+  font-size: .85rem;
+  line-height: 1.5;
+}
+
+.about-card .MuiButton-root {
+  padding: .25rem 0;
+  color: #9a4c2f;
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  font-weight: 700;
+}
+
+.about-card-art {
+  min-height: 190px;
+  background-position: center;
+  background-size: cover;
+}
+
+.about-card-art--listening { background: linear-gradient(145deg, rgba(217,75,43,.3), rgba(33,29,26,.45)), url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=800&q=80') center/cover; }
+.about-card-art--gear { background: linear-gradient(145deg, rgba(74,155,119,.25), rgba(33,29,26,.45)), url('https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?auto=format&fit=crop&w=800&q=80') center/cover; }
+.about-card-art--records { background: linear-gradient(145deg, rgba(243,189,59,.25), rgba(33,29,26,.45)), url('https://images.unsplash.com/photo-1539375665275-f9de415ef9ac?auto=format&fit=crop&w=800&q=80') center/cover; }
+
+.collection-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .7fr);
+  min-height: 360px;
+  overflow: hidden;
+  border: 2px solid #542d2d;
+  background: #e8d9ae;
+  box-shadow: 9px 9px 0 #542d2d;
+}
+
+.collection-copy {
+  align-self: center;
+  padding: clamp(2rem, 6vw, 4rem);
+}
+
+.collection-title {
+  max-width: 620px;
+  margin: .5rem 0 1rem !important;
+  color: #542d2d;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif !important;
+  font-size: clamp(2.5rem, 6vw, 5rem) !important;
+  font-weight: 400 !important;
+  line-height: .95 !important;
+  text-transform: uppercase;
+}
+
+.collection-description {
+  max-width: 500px;
+  margin-bottom: 1.5rem !important;
+  color: #684a39;
+  line-height: 1.7 !important;
+}
+
+.collection-copy .MuiButton-root {
+  border-radius: 0;
+  background: #9a4c2f;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.collection-art {
+  position: relative;
+  display: grid;
+  min-height: 360px;
+  place-items: center;
+  overflow: hidden;
+  background: #9a4c2f;
+}
+
+.collection-art::before {
+  position: absolute;
+  inset: 12%;
+  border: 2px solid rgba(255, 248, 232, .45);
+  content: '';
+  transform: rotate(7deg);
+}
+
+.collection-record {
+  position: absolute;
+  width: min(25vw, 240px);
+  height: min(25vw, 240px);
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, #211d1a 0 2px, #302a24 3px 5px);
+  animation: record-spin 8s linear infinite;
+}
+
+.collection-record span {
+  position: absolute;
+  inset: 36%;
+  border: 7px solid #d69a2d;
+  border-radius: 50%;
+  background: #9a4c2f;
+}
+
+.collection-art img {
+  position: relative;
+  z-index: 1;
+  width: min(22vw, 230px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 8px solid #fff8e8;
+  box-shadow: 8px 10px 0 rgba(84, 45, 45, .5);
+  transform: rotate(-7deg);
+}
+
+.collection-empty,
+.journal-feature {
+  padding: clamp(2rem, 5vw, 4rem);
+  border: 2px solid #542d2d;
+  background: #fff8e8;
+  box-shadow: 7px 7px 0 #d69a2d;
+}
+
+.collection-empty h3,
+.journal-feature h2 {
+  margin: .5rem 0;
+  color: #542d2d;
+  font-family: 'Bowlby One SC', 'Arial Black', sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.journal-feature {
+  background: #542d2d;
+  color: #fff8e8;
+}
+
+.journal-feature h2 {
+  color: #f3bd3b;
+}
+
+.journal-feature p:last-child {
+  max-width: 540px;
+  color: #e8d9ae;
+  line-height: 1.8;
+}
+
+@media (max-width: 700px) {
+  .genre-tiles { grid-template-columns: repeat(4, 1fr); }
+  .artist-tiles { grid-template-columns: repeat(4, 1fr); }
+  .gear-band { grid-template-columns: repeat(2, 1fr); }
+  .gear-intro { grid-column: 1 / -1; }
+  .shop-story-band { grid-template-columns: 1fr; gap: 0; }
+  .story-copy { padding: 1.2rem; }
+  .story-stamp { margin: 0 auto 1.2rem; }
+  .drops-band { align-items: flex-start; flex-direction: column; }
+  .drop-count { flex-wrap: wrap; }
+  .about-hero { grid-template-columns: 1fr; }
+  .about-hero-art { min-height: 230px; }
+  .about-card,
+  .about-card--reverse { grid-template-columns: 1fr; }
+  .about-card--reverse .about-card-art { order: 0; }
+
+  .recordia-search.is-open {
+    width: min(260px, calc(100vw - 24px));
+  }
+
+  .collection-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .collection-art {
+    min-height: 260px;
+  }
+
+  .collection-record,
+  .collection-art img {
+    width: 180px;
+  }
+
+  .collection-record {
+    height: 180px;
+  }
 }
 
 .vinyl-card {

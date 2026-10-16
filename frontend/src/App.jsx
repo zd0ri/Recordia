@@ -24,6 +24,9 @@ import AdminOrders from './pages/admin/Orders';
 import AdminOrderDetail from './pages/admin/OrderDetail';
 import AdminReviews from './pages/admin/Reviews';
 import Dashboard from './pages/admin/Dashboard';
+import CollectionLanding from './pages/CollectionLanding';
+import TaxonomyLanding from './pages/TaxonomyLanding';
+import About from './pages/About';
 
 function NotFound() {
   return (
@@ -52,6 +55,10 @@ export default function App() {
       <Container component="main" maxWidth="lg" sx={{ flex: 1, py: { xs: 4, md: 8 } }}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/collections/:collection" element={<CollectionLanding />} />
+          <Route path="/genres" element={<TaxonomyLanding type="genres" />} />
+          <Route path="/artists" element={<TaxonomyLanding type="artists" />} />
+          <Route path="/about" element={<About />} />
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
