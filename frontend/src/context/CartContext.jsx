@@ -44,6 +44,11 @@ export function CartProvider({ children }) {
 
   const removeFromCart = useCallback((productId) => persist(items.filter((item) => item.product !== productId)), [items, persist]);
 
+  const removeItems = useCallback((productIds) => {
+    const ids = new Set(productIds);
+    persist(items.filter((item) => !ids.has(item.product)));
+  }, [items, persist]);
+
   const changeQuantity = useCallback((productId, quantity) => {
     const item = items.find((entry) => entry.product === productId);
     if (!item) return;
@@ -63,9 +68,10 @@ export function CartProvider({ children }) {
     itemsPrice,
     addToCart,
     removeFromCart,
+    removeItems,
     changeQuantity,
     clearCart,
-  }), [items, itemCount, itemsPrice, addToCart, removeFromCart, changeQuantity, clearCart]);
+  }), [items, itemCount, itemsPrice, addToCart, removeFromCart, removeItems, changeQuantity, clearCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -19,7 +19,14 @@ export default function TaxonomyLanding({ type }) {
     Promise.all(requests).then((responses) => {
       const taxonomyResponse = responses[0];
       const taxonomyItems = isArtist ? taxonomyResponse.data.artists || [] : taxonomyResponse.data.genres || [];
-      setItems(taxonomyItems);
+      Promise.all(taxonomyItems.map(async (item) => {
+        const countResponse = await api.get('/products', {
+          params: { [isArtist ? 'artist' : 'genre']: item._id, page: 1, limit: 1 },
+        });
+        return { ...item, productCount: countResponse.data.filteredProductsCount || 0 };
+      })).then((itemsWithCounts) => setItems(itemsWithCounts)).catch((requestError) => {
+        setError(requestError.response?.data?.message || `Unable to load ${type} counts`);
+      });
       const requestedName = searchParams.get('keyword')?.toLowerCase();
       if (requestedName) {
         const requestedItem = taxonomyItems.find((item) => item.name?.toLowerCase() === requestedName);
@@ -69,7 +76,7 @@ export default function TaxonomyLanding({ type }) {
               ? <Box component="img" src={item.image.url} alt="" sx={{ borderRadius: '50%', height: 42, objectFit: 'cover', width: 42 }} />
               : <span className="taxonomy-card-mark">●</span>)
             : <span className="taxonomy-card-mark">●</span>}
-          <span>{item.name}</span><small>{isArtist ? 'View discography →' : 'Browse shelf →'}</small>
+          <span>{item.name}</span><small>{item.productCount ?? 0} {item.productCount === 1 ? 'title' : 'titles'}</small>
         </Button>)}
       </Box>
       <Box className="taxonomy-results">

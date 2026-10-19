@@ -99,7 +99,7 @@ export default function ProductDetails() {
           <Stack spacing={2} sx={{ flex: 1 }}>
             <Typography variant="h2">{product.album_title}</Typography>
             <Typography color="text.secondary" variant="h6">{product.artist?.name} · {product.genre?.name}</Typography>
-            <Typography color="primary" variant="h4">${Number(product.price).toFixed(2)}</Typography>
+            <Typography color="primary" variant="h4">₱{Number(product.price).toFixed(2)}</Typography>
             <Typography>{product.description}</Typography>
             <Typography>Merchandise: {product.merch_type}</Typography>
             <Typography color={product.stocks > 0 ? 'success.main' : 'error.main'}>{product.stocks > 0 ? `${product.stocks} in stock` : 'Out of stock'}</Typography>

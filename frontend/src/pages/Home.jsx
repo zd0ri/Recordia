@@ -18,6 +18,7 @@ export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
+  const [genreTiles, setGenreTiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -77,6 +78,27 @@ export default function Home() {
     };
   }, [filterKey, filters.page, filters.artist, filters.genre, filters.keyword, filters.price, filters.rating, filters.reviewCount]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const loadGenreCounts = async () => {
+      try {
+        const { data } = await api.get('/genres');
+        const genres = data.genres || [];
+        const counts = await Promise.all(genres.map(async (genre) => {
+          const response = await api.get('/products', {
+            params: { genre: genre._id, page: 1, limit: 1 },
+          });
+          return { ...genre, count: response.data.filteredProductsCount || 0 };
+        }));
+        if (!cancelled) setGenreTiles(counts.slice(0, 7));
+      } catch (requestError) {
+        if (!cancelled) setError(requestError.response?.data?.message || 'Unable to load genre counts');
+      }
+    };
+    loadGenreCounts();
+    return () => { cancelled = true; };
+  }, []);
+
   const updateFilter = (name, value) => {
     const next = new URLSearchParams(searchParams);
     if (value) next.set(name === 'rating' ? 'ratings[gte]' : name === 'reviewCount' ? 'reviews[gte]' : name, value);
@@ -87,15 +109,6 @@ export default function Home() {
 
   const featuredProduct = products[0];
   const featuredReleases = products.slice(0, 6);
-  const genreTiles = [
-    { name: 'Jazz', count: '230+ titles' },
-    { name: 'Rock', count: '540+ titles' },
-    { name: 'Soul / Funk', count: '310+ titles' },
-    { name: 'Hip Hop', count: '280+ titles' },
-    { name: 'Indie / Alt', count: '420+ titles' },
-    { name: 'Electronic', count: '190+ titles' },
-    { name: 'World', count: '160+ titles' },
-  ];
   const gearProducts = products.slice(6, 11);
 
   return (
@@ -125,10 +138,10 @@ export default function Home() {
         <Button component={RouterLink} to="/genres" className="band-link">View all genres →</Button>
         <Box className="genre-tiles">
           {genreTiles.map((genre, index) => (
-            <Button key={genre.name} className="genre-tile" component={RouterLink} to={`/genres?keyword=${encodeURIComponent(genre.name)}`}>
+            <Button key={genre._id} className="genre-tile" component={RouterLink} to={`/genres?keyword=${encodeURIComponent(genre.name)}`}>
               <Box className="genre-image" sx={{ backgroundImage: `url(${products[index]?.images?.[0]?.url || 'https://placehold.co/160x160?text=Vinyl'})` }} />
               <strong>{genre.name}</strong>
-              <small>{genre.count}</small>
+              <small>{genre.count} {genre.count === 1 ? 'title' : 'titles'}</small>
             </Button>
           ))}
         </Box>
@@ -146,7 +159,7 @@ export default function Home() {
                 <Box component="img" src={product.images?.[0]?.url || 'https://placehold.co/300x300?text=Recordia'} alt={product.album_title} />
                 <Typography className="release-name">{product.album_title}</Typography>
                 <Typography className="release-artist">{product.artist?.name}</Typography>
-                <Typography className="release-price">${Number(product.price || 0).toFixed(2)}</Typography>
+                <Typography className="release-price">₱{Number(product.price || 0).toFixed(2)}</Typography>
                 <Button component={RouterLink} to={`/products/${product._id}`}>View record</Button>
               </Box>
             </Grid>
@@ -164,7 +177,7 @@ export default function Home() {
           <Box className="gear-item" key={product._id}>
             <Box component="img" src={product.images?.[0]?.url || 'https://placehold.co/300x220?text=Gear'} alt={product.name || product.album_title} />
             <Typography>{product.name || product.album_title}</Typography>
-            <strong>${Number(product.price || 0).toFixed(2)}</strong>
+            <strong>₱{Number(product.price || 0).toFixed(2)}</strong>
           </Box>
         ))}
       </Box>

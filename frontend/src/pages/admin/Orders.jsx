@@ -40,7 +40,7 @@ export default function Orders() {
       renderCell: ({ row }) => <Button component={RouterLink} to={`/admin/orders/${row._id}`}>{row._id.slice(-8)}</Button>,
     },
     { field: 'customer', headerName: 'Customer', flex: 1.2, minWidth: 180, valueGetter: (_, row) => row.user?.name || row.user?.email || 'Unknown' },
-    { field: 'totalPrice', headerName: 'Total', width: 110, valueFormatter: (value) => `$${Number(value).toFixed(2)}` },
+    { field: 'totalPrice', headerName: 'Total', width: 110, valueFormatter: (value) => `₱${Number(value).toFixed(2)}` },
     { field: 'payment', headerName: 'Payment', width: 120, valueGetter: (_, row) => row.paymentInfo?.method || '-' },
     { field: 'orderStatus', headerName: 'Status', width: 130 },
     { field: 'createdAt', headerName: 'Date', width: 150, valueFormatter: (value) => new Date(value).toLocaleDateString() },

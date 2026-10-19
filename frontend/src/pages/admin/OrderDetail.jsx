@@ -4,12 +4,20 @@ import {
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
+import { useSnackbar } from '../../context/SnackbarContext';
 
-const statuses = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'];
+const nextStatuses = {
+  Pending: ['Processing', 'Cancelled'],
+  Processing: ['Shipped'],
+  Shipped: ['Completed'],
+  Completed: [],
+  Cancelled: [],
+};
 
 export default function OrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showSuccess } = useSnackbar();
   const [order, setOrder] = useState(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -31,7 +39,9 @@ export default function OrderDetail() {
     try {
       const { data } = await api.put(`/admin/order/${id}`, { status });
       setOrder(data.order);
+      setStatus(data.order.orderStatus);
       setWarning(data.warning || '');
+      showSuccess(`Order status updated to ${data.order.orderStatus}.`);
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to update order');
     } finally {
@@ -42,7 +52,8 @@ export default function OrderDetail() {
   if (error && !order) return <Alert severity="error">{error}</Alert>;
   if (!order) return <Typography>Loading order...</Typography>;
 
-  const locked = ['Completed', 'Cancelled'].includes(order.orderStatus);
+  const availableStatuses = nextStatuses[order.orderStatus] || [];
+  const locked = availableStatuses.length === 0;
   return (
     <Stack spacing={2}>
       <Button onClick={() => navigate('/admin/orders')} sx={{ alignSelf: 'flex-start' }}>Back to orders</Button>
@@ -60,16 +71,17 @@ export default function OrderDetail() {
           {order.orderItems.map((item) => (
             <Stack key={item.product} direction="row" justifyContent="space-between">
               <Typography>{item.name} × {item.quantity}</Typography>
-              <Typography>${(item.price * item.quantity).toFixed(2)}</Typography>
+              <Typography>₱{(item.price * item.quantity).toFixed(2)}</Typography>
             </Stack>
           ))}
           <Divider />
           <Typography>Payment method: {order.paymentInfo?.method}</Typography>
-          <Typography>Total: ${Number(order.totalPrice).toFixed(2)}</Typography>
+          <Typography>Total: ₱{Number(order.totalPrice).toFixed(2)}</Typography>
           <FormControl disabled={locked} sx={{ maxWidth: 260 }}>
             <InputLabel id="admin-order-status">Status</InputLabel>
             <Select labelId="admin-order-status" label="Status" value={status} onChange={(event) => setStatus(event.target.value)}>
-              {statuses.map((item) => <MenuItem key={item} value={item}>{item}</MenuItem>)}
+              <MenuItem value={order.orderStatus}>{order.orderStatus} (current)</MenuItem>
+              {availableStatuses.map((item) => <MenuItem key={item} value={item}>{item}</MenuItem>)}
             </Select>
           </FormControl>
           <Button disabled={locked || saving || status === order.orderStatus} onClick={updateStatus} variant="contained">

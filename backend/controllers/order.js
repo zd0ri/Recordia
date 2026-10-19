@@ -92,9 +92,30 @@ exports.newOrder = catchAsync(async (req, res, next) => {
         user: req.user._id
     })
 
+    let emailWarning;
+    const orderForEmail = await Order.findById(order._id)
+        .populate('user', 'name email');
+    try {
+        const receipt = await generateReceipt(orderForEmail);
+        await sendEmail({
+            email: orderForEmail.user.email,
+            subject: `Recordia order ${orderForEmail._id} received`,
+            html: createOrderEmail(orderForEmail),
+            attachments: [{
+                filename: `recordia-order-${orderForEmail._id}.pdf`,
+                content: receipt,
+                contentType: 'application/pdf'
+            }]
+        });
+    } catch (error) {
+        emailWarning = 'Order placed, but the customer email could not be sent';
+        console.error('New order email failed:', error.message);
+    }
+
     res.status(200).json({
         success: true,
-        order
+        order,
+        ...(emailWarning ? { warning: emailWarning } : {})
     })
 })
 
@@ -175,9 +196,16 @@ exports.updateOrder = catchAsync(async (req, res, next) => {
     if (!validStatuses.includes(nextStatus)) {
         return res.status(400).json({ message: 'Invalid order status' });
     }
-    if (order.orderStatus === 'Completed' || order.orderStatus === 'Cancelled') {
+    const allowedTransitions = {
+        Pending: ['Processing', 'Cancelled'],
+        Processing: ['Shipped'],
+        Shipped: ['Completed'],
+        Completed: [],
+        Cancelled: []
+    };
+    if (!allowedTransitions[order.orderStatus].includes(nextStatus)) {
         return res.status(400).json({
-            message: `Orders with status ${order.orderStatus} cannot be changed`
+            message: `Orders cannot move from ${order.orderStatus} to ${nextStatus}`
         });
     }
 
@@ -199,13 +227,6 @@ exports.updateOrder = catchAsync(async (req, res, next) => {
             await updateStock(item.product, -item.quantity);
         }
         order.stockDeducted = true;
-    }
-
-    if (nextStatus === 'Cancelled' && order.stockDeducted) {
-        for (const item of order.orderItems) {
-            await updateStock(item.product, item.quantity);
-        }
-        order.stockDeducted = false;
     }
 
     order.orderStatus = nextStatus;

@@ -76,7 +76,7 @@ export default function Dashboard() {
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="month" />
       <YAxis />
-      <Tooltip formatter={(value, name) => name === 'sales' ? [`$${Number(value).toFixed(2)}`, 'Sales'] : [value, 'Orders']} />
+      <Tooltip formatter={(value, name) => name === 'sales' ? [`₱${Number(value).toFixed(2)}`, 'Sales'] : [value, 'Orders']} />
       <Legend />
       <Line dataKey="sales" name="Sales" stroke="#263a32" strokeWidth={3} />
       <Line dataKey="orders" name="Orders" stroke="#b48a43" />
@@ -86,7 +86,7 @@ export default function Dashboard() {
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="month" />
       <YAxis />
-      <Tooltip formatter={(value, name) => name === 'sales' ? [`$${Number(value).toFixed(2)}`, 'Sales'] : [value, 'Orders']} />
+      <Tooltip formatter={(value, name) => name === 'sales' ? [`₱${Number(value).toFixed(2)}`, 'Sales'] : [value, 'Orders']} />
       <Legend />
       <Bar dataKey="sales" name="Sales" fill="#263a32" />
       <Bar dataKey="orders" name="Orders" fill="#b48a43" />
@@ -106,7 +106,7 @@ export default function Dashboard() {
       {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
       <Grid container spacing={2}>
         {[
-          ['Total sales', `$${Number(sales.totalSales || 0).toFixed(2)}`, TrendingUpRoundedIcon, 'amber'],
+          ['Total sales', `₱${Number(sales.totalSales || 0).toFixed(2)}`, TrendingUpRoundedIcon, 'amber'],
           ['Completed orders', sales.orderCount || 0, ShoppingBagRoundedIcon, 'coral'],
           ['Products', counts.products, Inventory2RoundedIcon, 'mint'],
           ['Users', counts.users, PeopleAltRoundedIcon, 'blue'],
