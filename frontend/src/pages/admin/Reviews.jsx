@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Box, Button, Dialog, DialogActions, DialogTitle, MenuItem, Select, Stack, TextField, Typography,
+  Autocomplete, Box, Button, Dialog, DialogActions, DialogTitle, MenuItem, Select, Stack, TextField, Typography,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import api from '../../api/axios';
@@ -10,6 +10,12 @@ export default function Reviews() {
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ search: '', minRating: '', maxRating: '' });
+  const searchSuggestions = [...new Set(rows.flatMap((row) => [
+    row.comment,
+    row.product?.album_title,
+    row.user?.email,
+    row.name,
+  ]).filter(Boolean))];
 
   const loadReviews = async (nextFilters = filters) => {
     try {
@@ -42,11 +48,15 @@ export default function Reviews() {
       <Typography variant="h3">Reviews</Typography>
       {error && <Typography color="error">{error}</Typography>}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-        <TextField
-          size="small"
-          label="Search review, product, or user"
-          value={filters.search}
-          onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
+        <Autocomplete
+          freeSolo
+          options={searchSuggestions}
+          inputValue={filters.search}
+          onInputChange={(_, value) => setFilters((current) => ({ ...current, search: value }))}
+          renderInput={(params) => (
+            <TextField {...params} size="small" label="Search review, product, or user" />
+          )}
+          sx={{ minWidth: 300 }}
         />
         <Select
           size="small"

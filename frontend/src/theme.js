@@ -29,6 +29,11 @@ const theme = createTheme({
       fontFamily: '"Playfair Display", Georgia, serif',
       fontWeight: 700,
     },
+    button: {
+      fontFamily: '"DM Mono", "Courier New", monospace',
+      fontWeight: 700,
+      letterSpacing: '0.04em',
+    },
   },
   shape: {
     borderRadius: 3,

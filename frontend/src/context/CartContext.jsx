@@ -1,4 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useAuth } from './AuthContext';
+import { useSnackbar } from './SnackbarContext';
 
 /* eslint-disable react-refresh/only-export-components */
 const CartContext = createContext(null);
@@ -15,13 +17,27 @@ const readCart = () => {
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(readCart);
+  const { user, loading: authLoading } = useAuth();
+  const { showError } = useSnackbar();
 
   const persist = useCallback((nextItems) => {
     setItems(nextItems);
     localStorage.setItem(storageKey, JSON.stringify(nextItems));
   }, []);
 
+  useEffect(() => {
+    if (!authLoading && !user && items.length > 0) {
+      // Auth resolution can invalidate cart state loaded before identity was known.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      persist([]);
+    }
+  }, [authLoading, items.length, persist, user]);
+
   const addToCart = useCallback((product, quantity = 1) => {
+    if (!user) {
+      showError('Please log in or register before adding items to your cart.');
+      return false;
+    }
     const existing = items.find((item) => item.product === product._id);
     const nextQuantity = Math.min(
       product.stocks,
@@ -40,7 +56,8 @@ export function CartProvider({ children }) {
         quantity: Math.min(product.stocks, Number(quantity)),
       }];
     persist(nextItems.filter((item) => item.quantity > 0));
-  }, [items, persist]);
+    return true;
+  }, [items, persist, showError, user]);
 
   const removeFromCart = useCallback((productId) => persist(items.filter((item) => item.product !== productId)), [items, persist]);
 

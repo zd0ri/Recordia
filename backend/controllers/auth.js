@@ -14,6 +14,9 @@ const defaultAvatar = {
 
 const sanitizeUser = (user) => {
     const userData = user.toObject ? user.toObject() : { ...user };
+    if (user.isNew || user.isSelected?.('password')) {
+        userData.hasPassword = Boolean(user.password);
+    }
     delete userData.password;
     return userData;
 };
@@ -130,7 +133,7 @@ exports.firebaseLogin = catchAsync(async (req, res, next) => {
             { firebaseUid },
             { email: { $regex: `^${escapedEmail}$`, $options: 'i' } }
         ]
-    });
+    }).select('+password');
 
     if (user) {
         if (user.isActive === false) {
@@ -224,7 +227,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 })
 
 exports.getUserProfile = catchAsync(async (req, res, next) => {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select('+password');
     return res.status(200).json({
         success: true,
         user: sanitizeUser(user)
@@ -250,7 +253,7 @@ exports.updateProfile = catchAsync(async (req, res, next) => {
     const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
         new: true,
         runValidators: true,
-    })
+    }).select('+password')
     if (!user) {
         return res.status(401).json({ message: 'User Not Updated' })
     }
@@ -267,12 +270,31 @@ exports.updateProfile = catchAsync(async (req, res, next) => {
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
     const user = await User.findById(req.user.id).select('+password');
-    // Check previous user password
-    const isMatched = await user.comparePassword(req.body.oldPassword)
-    if (!isMatched) {
-        return res.status(400).json({ message: 'Old password is incorrect' })
+    if (!user) {
+        return next(new ErrorHandler('User not found', 404));
     }
-    user.password = req.body.password;
+
+    const { oldPassword, password, confirmPassword } = req.body;
+    if (typeof password !== 'string' || password.length < 6) {
+        return next(new ErrorHandler('New password must be at least 6 characters', 400));
+    }
+    if (password !== confirmPassword) {
+        return next(new ErrorHandler('Passwords do not match', 400));
+    }
+
+    if (user.password) {
+        if (!oldPassword) {
+            return next(new ErrorHandler('Current password is required', 400));
+        }
+        const isMatched = await user.comparePassword(oldPassword);
+        if (!isMatched) {
+            return next(new ErrorHandler('Old password is incorrect', 400));
+        }
+    } else if (!user.firebaseUid) {
+        return next(new ErrorHandler('Current password is required', 400));
+    }
+
+    user.password = password;
     await user.save();
     const token = user.getJwtToken();
 

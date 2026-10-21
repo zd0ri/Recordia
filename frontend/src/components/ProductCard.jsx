@@ -10,8 +10,9 @@ export default function ProductCard({ product }) {
   const { showSuccess } = useSnackbar();
 
   const handleAddToCart = () => {
-    addToCart(product);
-    showSuccess(`${product.album_title} added to your cart`);
+    if (addToCart(product)) {
+      showSuccess(`${product.album_title} added to your cart`);
+    }
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Avatar,
   Box,
   Button,
@@ -47,6 +48,12 @@ export default function Products() {
       row.merch_type,
     ].some((value) => String(value || '').toLowerCase().includes(query)));
   }, [rows, search]);
+  const searchSuggestions = useMemo(() => [...new Set(rows.flatMap((row) => [
+    row.album_title,
+    row.artist?.name,
+    row.genre?.name,
+    row.merch_type,
+  ]).filter(Boolean))], [rows]);
 
   const deleteSelected = async () => {
     const selectedIds = Array.from(selection.ids);
@@ -111,7 +118,14 @@ export default function Products() {
       </Stack>
       {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
-        <TextField label="Quick search" size="small" value={search} onChange={(event) => setSearch(event.target.value)} />
+        <Autocomplete
+          freeSolo
+          options={searchSuggestions}
+          inputValue={search}
+          onInputChange={(_, value) => setSearch(value)}
+          renderInput={(params) => <TextField {...params} label="Quick search" size="small" />}
+          sx={{ minWidth: 260 }}
+        />
         <Button color="error" disabled={!selection.ids.size} variant="outlined" onClick={() => setConfirmOpen(true)}>
           Delete selected ({selection.ids.size})
         </Button>

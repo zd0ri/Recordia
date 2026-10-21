@@ -43,13 +43,25 @@ export default function Navbar() {
   const matches = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return [];
-    return suggestions.filter((product) => [
+    const productMatches = suggestions.filter((product) => [
       product.album_title,
       product.name,
       product.artist?.name,
       product.genre?.name,
-    ].some((value) => value?.toLowerCase().includes(query))).slice(0, 6);
-  }, [search, suggestions]);
+    ].some((value) => value?.toLowerCase().includes(query))).map((product) => ({
+      ...product,
+      suggestionType: 'record',
+    }));
+    const genreMatches = options.genres.filter((genre) => genre.name?.toLowerCase().includes(query)).map((genre) => ({
+      ...genre,
+      suggestionType: 'genre',
+    }));
+    const artistMatches = options.artists.filter((artist) => artist.name?.toLowerCase().includes(query)).map((artist) => ({
+      ...artist,
+      suggestionType: 'artist',
+    }));
+    return [...productMatches, ...genreMatches, ...artistMatches].slice(0, 8);
+  }, [options.artists, options.genres, search, suggestions]);
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -61,6 +73,18 @@ export default function Navbar() {
   };
 
   const chooseSuggestion = (product) => {
+    if (product.suggestionType === 'genre') {
+      setSearch(product.name);
+      setSearchOpen(false);
+      navigate(`/genres?keyword=${encodeURIComponent(product.name)}`);
+      return;
+    }
+    if (product.suggestionType === 'artist') {
+      setSearch(product.name);
+      setSearchOpen(false);
+      navigate(`/artists?keyword=${encodeURIComponent(product.name)}`);
+      return;
+    }
     setSearch(product.album_title || product.name || '');
     setSearchOpen(false);
     navigate(`/products/${product._id}`);
@@ -103,8 +127,8 @@ export default function Navbar() {
               <SearchIcon />
             </IconButton>
             {searchOpen && matches.length > 0 && <Box className="search-suggestions">
-              {matches.map((product) => <Button key={product._id} onClick={() => chooseSuggestion(product)}>
-                <span>{product.album_title || product.name}</span><small>{product.artist?.name || product.category || 'Recordia shelf'}</small>
+              {matches.map((product) => <Button key={`${product.suggestionType}-${product._id}`} onClick={() => chooseSuggestion(product)}>
+                <span>{product.album_title || product.name}</span><small>{product.suggestionType === 'genre' ? 'Genre' : product.suggestionType === 'artist' ? 'Artist' : product.artist?.name || product.category || 'Recordia shelf'}</small>
               </Button>)}
             </Box>}
             {searchOpen && <IconButton className="recordia-filter-button" color="inherit" onClick={(event) => setFilterAnchor(event.currentTarget)} aria-label="Filter products">
@@ -123,7 +147,7 @@ export default function Navbar() {
           </Tooltip>}
           {user?.role !== 'admin' && <Tooltip title="Shopping bag">
             <IconButton className="recordia-icon-link" color="inherit" component={RouterLink} to="/cart" aria-label="Shopping bag">
-              <ShoppingBagOutlinedIcon /><span className="cart-badge">{itemCount || 0}</span>
+              <ShoppingBagOutlinedIcon /><span className="cart-badge">{user ? itemCount : 0}</span>
             </IconButton>
           </Tooltip>}
           {user?.role === 'admin' ? <Button className="recordia-nav-link" color="inherit" onClick={() => { logout(); navigate('/'); }}>Logout</Button>

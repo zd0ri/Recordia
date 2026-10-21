@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Avatar,
   Box,
   Button,
@@ -74,6 +75,7 @@ export default function Users() {
   };
 
   const editingSelf = selectedUser?._id === currentUser?._id;
+  const searchSuggestions = [...new Set(rows.flatMap((row) => [row.name, row.email]).filter(Boolean))];
 
   const toggleUser = async (row) => {
     try {
@@ -134,11 +136,15 @@ export default function Users() {
     <Box>
       <Typography gutterBottom variant="h3">User management</Typography>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
-        <TextField
-          label="Search name or email"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          size="small"
+        <Autocomplete
+          freeSolo
+          options={searchSuggestions}
+          inputValue={search}
+          onInputChange={(_, value) => setSearch(value)}
+          renderInput={(params) => (
+            <TextField {...params} label="Search name or email" size="small" />
+          )}
+          sx={{ minWidth: 260 }}
         />
         <Button variant="contained" onClick={() => loadUsers(search)}>Search</Button>
       </Stack>

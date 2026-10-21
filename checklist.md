@@ -100,6 +100,11 @@ items below are environment setup or live/manual verification steps, not known m
 
 ## Other requirements — implementation status
 
+- [x] Cart additions require login; logged-out customers receive a login/register notification.
+- [x] Storefront product cards and product details show confirmation after adding to cart.
+- [x] Storefront and admin product, user, and review searches provide autocomplete suggestions.
+- [x] Google-authenticated users can optionally create a Recordia password from their profile
+  without entering a current password; existing passwords still require the current password.
 - [x] Order status cannot be changed after `Completed` or `Cancelled`.
 - [x] Cancelled orders cannot be modified, and stock is restored only when cancellation follows
   stock deduction.
@@ -439,6 +444,10 @@ https://recordia-b74a5.firebaseapp.com/__/auth/handler
 - [ ] Change the password successfully.
 - [ ] Try an incorrect old password.
 - [ ] Try mismatched password confirmation.
+- [ ] Sign in with Google and confirm the profile offers an optional password creation form with
+      no current-password field.
+- [ ] Create a password from the Google user's profile and confirm email/password login works.
+- [ ] Confirm an account with an existing password still requires its current password to change it.
 - [ ] Confirm success and error feedback is displayed.
 
 ## 12. Admin access and user management
@@ -449,6 +458,7 @@ https://recordia-b74a5.firebaseapp.com/__/auth/handler
 - [ ] Open the admin dashboard.
 - [ ] Search users by name.
 - [ ] Search users by email.
+- [ ] Confirm user search autocomplete suggests matching names and email addresses.
 - [ ] Edit a user's name.
 - [ ] Edit a user's email.
 - [ ] Change a user's role.
@@ -473,6 +483,7 @@ https://recordia-b74a5.firebaseapp.com/__/auth/handler
 - [ ] Replace product images.
 - [ ] Edit without replacing images.
 - [ ] Search products with quick search.
+- [ ] Confirm product search autocomplete suggests titles, artists, genres, and merchandise types.
 - [ ] Select multiple products.
 - [ ] Confirm the bulk-delete dialog.
 - [ ] Delete selected products.
@@ -498,6 +509,7 @@ https://recordia-b74a5.firebaseapp.com/__/auth/handler
 - [ ] Confirm loading state or skeletons appear.
 - [ ] Confirm products display.
 - [ ] Search by keyword.
+- [ ] Confirm storefront search suggests matching records, artists, and genres.
 - [ ] Filter by price range.
 - [ ] Filter by genre.
 - [ ] Filter by artist.
@@ -517,6 +529,9 @@ https://recordia-b74a5.firebaseapp.com/__/auth/handler
 
 ## 16. Product details and cart
 
+- [ ] While logged out, try adding a product from both a product card and its detail page; confirm
+      a login/register notification appears and the cart is unchanged.
+- [ ] Log in and confirm adding from a product card and product details succeeds with confirmation.
 - [ ] Open a product detail page.
 - [ ] View product images.
 - [ ] Navigate between multiple images.
@@ -609,6 +624,7 @@ https://recordia-b74a5.firebaseapp.com/__/auth/handler
 - [ ] Submit profanity in a review.
 - [ ] Confirm profanity is replaced with `***`.
 - [ ] Open admin reviews.
+- [ ] Confirm review search autocomplete suggests matching comments, products, and users.
 - [ ] Confirm product, user, rating, and comment appear.
 - [ ] Delete a review as an admin.
 
