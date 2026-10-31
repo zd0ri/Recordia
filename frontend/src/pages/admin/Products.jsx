@@ -15,6 +15,7 @@ import {
 import { DataGrid } from '@mui/x-data-grid';
 import { Link as RouterLink } from 'react-router-dom';
 import api from '../../api/axios';
+import { confirmCrudDelete, showCrudSuccess } from '../../utils/alerts';
 
 export default function Products() {
   const [rows, setRows] = useState([]);
@@ -62,13 +63,15 @@ export default function Products() {
       setRows((current) => current.filter((row) => !selectedIds.includes(row._id)));
       setSelection({ type: 'include', ids: new Set() });
       setConfirmOpen(false);
+      await showCrudSuccess('Deleted');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to delete selected products');
     }
   };
 
   const deleteOne = async (id) => {
-    if (!window.confirm('Delete this product?')) return;
+    const confirmation = await confirmCrudDelete('this product');
+    if (!confirmation.isConfirmed) return;
     try {
       await api.delete(`/admin/product/${id}`);
       setRows((current) => current.filter((row) => row._id !== id));
@@ -77,6 +80,7 @@ export default function Products() {
         ids.delete(id);
         return { ...current, ids };
       });
+      await showCrudSuccess('Deleted');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to delete product');
     }

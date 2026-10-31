@@ -16,14 +16,14 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
-
-const merchTypes = ['Vinyl', 'T-Shirt', 'Poster', 'Tote Bag', 'Accessory', 'Other'];
+import { showCrudSuccess } from '../../utils/alerts';
+import { MERCH_TYPES } from '../../constants';
 
 const schema = Yup.object({
   album_title: Yup.string().trim().required('Album title is required'),
   artist: Yup.string().required('Artist is required'),
   genre: Yup.string().required('Genre is required'),
-  merch_type: Yup.string().oneOf(merchTypes).required('Merchandise type is required'),
+  merch_type: Yup.string().oneOf(MERCH_TYPES).required('Merchandise type is required'),
   price: Yup.number().typeError('Price must be a number').min(0, 'Price cannot be negative').required('Price is required'),
   description: Yup.string().trim().required('Description is required'),
   stocks: Yup.number().typeError('Stocks must be a number').integer('Stocks must be a whole number').min(0, 'Stocks cannot be negative').required('Stocks are required'),
@@ -115,7 +115,10 @@ export default function ProductForm() {
             const response = editing
               ? await api.put(`/admin/product/${id}`, payload)
               : await api.post('/admin/product/new', payload);
-            if (response.data.success) navigate('/admin/products');
+            if (response.data.success) {
+              await showCrudSuccess(editing ? 'Updated' : 'Created');
+              navigate('/admin/products');
+            }
           } catch (submitError) {
             setError(submitError.response?.data?.message || 'Unable to save product');
           } finally {
@@ -141,7 +144,7 @@ export default function ProductForm() {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Field as={TextField} fullWidth select name="merch_type" label="Merchandise type" error={touched.merch_type && !!errors.merch_type} helperText={touched.merch_type && errors.merch_type}>
-                  {merchTypes.map((type) => <MenuItem key={type} value={type}>{type}</MenuItem>)}
+                  {MERCH_TYPES.map((type) => <MenuItem key={type} value={type}>{type}</MenuItem>)}
                 </Field>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>

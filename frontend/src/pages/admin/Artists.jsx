@@ -17,6 +17,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { DataGrid } from '@mui/x-data-grid';
 import api from '../../api/axios';
+import { confirmCrudDelete, showCrudSuccess } from '../../utils/alerts';
 
 const schema = Yup.object({
   name: Yup.string().trim().required('Artist name is required'),
@@ -57,10 +58,12 @@ export default function Artists() {
   }, []);
 
   const deleteArtist = async (id) => {
-    if (!window.confirm('Delete this artist?')) return;
+    const confirmation = await confirmCrudDelete('this artist');
+    if (!confirmation.isConfirmed) return;
     try {
       await api.delete(`/admin/artist/${id}`);
       setRows((current) => current.filter((row) => row._id !== id));
+      await showCrudSuccess('Deleted');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to delete artist');
     }
@@ -130,6 +133,7 @@ export default function Artists() {
                 ? current.map((row) => (row._id === artist._id ? artist : row))
                 : [...current, artist]);
               setEditing(null);
+              await showCrudSuccess(editing._id ? 'Updated' : 'Created');
             } catch (requestError) {
               const message = requestError.response?.data?.message || 'Unable to save artist';
               setError(message);

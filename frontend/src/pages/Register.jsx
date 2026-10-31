@@ -16,6 +16,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { DEFAULT_HOME_ROUTE } from '../constants';
 import {
   registerWithFirebaseEmail,
   signInWithFirebaseFacebook,
@@ -45,7 +46,7 @@ export default function Register() {
     try {
       const result = await signInWithFirebaseGoogle();
       await firebaseLogin(await result.user.getIdToken());
-      navigate('/profile');
+      navigate(DEFAULT_HOME_ROUTE);
     } catch (submitError) {
       setError(submitError.response?.data?.message || submitError.message || 'Google registration failed');
     }
@@ -56,7 +57,7 @@ export default function Register() {
     try {
       const result = await signInWithFirebaseFacebook();
       await firebaseLogin(await result.user.getIdToken());
-      navigate('/profile');
+      navigate(DEFAULT_HOME_ROUTE);
     } catch (submitError) {
       setError(
         submitError.response?.data?.message
@@ -105,7 +106,7 @@ export default function Register() {
                 throw firebaseError;
               }
             }
-            navigate('/profile');
+            navigate(DEFAULT_HOME_ROUTE);
           } catch (submitError) {
             setError(
               submitError.response?.data?.message

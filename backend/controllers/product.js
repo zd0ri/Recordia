@@ -87,6 +87,30 @@ exports.getProducts = catchAsync(async (req, res) => {
         resPerPage: apiFeatures.resPerPage,
         totalPages
     });
+
+});
+
+exports.getProductSuggestions = catchAsync(async (req, res) => {
+    const keyword = typeof req.query.keyword === 'string'
+        ? req.query.keyword.trim()
+        : '';
+    if (!keyword) {
+        return res.status(200).json({ success: true, products: [] });
+    }
+
+    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const products = await Product.find({
+        $or: [
+            { album_title: { $regex: escapedKeyword, $options: 'i' } },
+            { description: { $regex: escapedKeyword, $options: 'i' } }
+        ]
+    })
+        .sort({ album_title: 1 })
+        .limit(8)
+        .populate('artist')
+        .populate('genre');
+
+    res.status(200).json({ success: true, products });
 });
 
 exports.updateProduct = catchAsync(async (req, res) => {

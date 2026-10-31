@@ -6,6 +6,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { DEFAULT_HOME_ROUTE } from '../constants';
 import {
   signInWithFirebaseFacebook,
   signInWithFirebaseEmail,
@@ -20,7 +21,7 @@ const schema = Yup.object({
 const getPostLoginPath = (location, user) => (
   user.role === 'admin'
     ? '/admin/dashboard'
-    : location.state?.from?.pathname || '/profile'
+    : location.state?.from?.pathname || DEFAULT_HOME_ROUTE
 );
 
 export default function Login() {

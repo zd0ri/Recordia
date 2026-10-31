@@ -24,12 +24,10 @@ export default function Navbar() {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      api.get('/products', { params: { page: 1, limit: 100 } }),
       api.get('/artists'),
       api.get('/genres'),
-    ]).then(([productsResponse, artistsResponse, genresResponse]) => {
+    ]).then(([artistsResponse, genresResponse]) => {
       if (cancelled) return;
-      setSuggestions(productsResponse.data.products || []);
       setOptions({
         artists: artistsResponse.data.artists || [],
         genres: genresResponse.data.genres || [],
@@ -39,6 +37,27 @@ export default function Navbar() {
     });
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    const query = search.trim();
+    if (!query) {
+      return undefined;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      api.get('/products/suggestions', { params: { keyword: query } })
+        .then(({ data }) => {
+          if (!cancelled) setSuggestions(data.products || []);
+        })
+        .catch(() => {
+          if (!cancelled) setSuggestions([]);
+        });
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [search]);
 
   const matches = useMemo(() => {
     const query = search.trim().toLowerCase();

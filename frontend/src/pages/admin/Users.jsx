@@ -13,7 +13,6 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Snackbar,
   Stack,
   Switch,
   TextField,
@@ -22,6 +21,7 @@ import {
 import { DataGrid } from '@mui/x-data-grid';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { showCrudSuccess } from '../../utils/alerts';
 
 export default function Users() {
   const { user: currentUser } = useAuth();
@@ -30,7 +30,6 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', role: 'user', isActive: true });
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
 
   const loadUsers = async (searchTerm = search) => {
     try {
@@ -68,7 +67,7 @@ export default function Users() {
         row.id === data.user._id ? { ...data.user, id: data.user._id } : row
       )));
       setSelectedUser(null);
-      setNotice('User updated');
+      await showCrudSuccess('Updated');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to update user');
     }
@@ -88,7 +87,7 @@ export default function Users() {
       setRows((current) => current.map((item) => (
         item.id === data.user._id ? { ...data.user, id: data.user._id } : item
       )));
-      setNotice(data.user.isActive ? 'User activated' : 'User deactivated');
+      await showCrudSuccess(data.user.isActive ? 'Activated' : 'Deactivated');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to update user');
     }
@@ -190,7 +189,6 @@ export default function Users() {
           <Button variant="contained" onClick={saveUser}>Save</Button>
         </DialogActions>
       </Dialog>
-      <Snackbar open={Boolean(notice)} autoHideDuration={3000} message={notice} onClose={() => setNotice('')} />
     </Box>
   );
 }

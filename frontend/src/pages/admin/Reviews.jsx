@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import api from '../../api/axios';
+import { showCrudSuccess } from '../../utils/alerts';
 
 export default function Reviews() {
   const [rows, setRows] = useState([]);
@@ -37,6 +38,7 @@ export default function Reviews() {
       await api.delete('/reviews', { params: { productId: selected.product._id, id: selected._id } });
       setRows((current) => current.filter((row) => row._id !== selected._id));
       setSelected(null);
+      await showCrudSuccess('Deleted');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to delete review');
       setSelected(null);

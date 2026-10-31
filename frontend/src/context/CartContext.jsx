@@ -1,10 +1,15 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
 import { useAuth } from './AuthContext';
 import { useSnackbar } from './SnackbarContext';
 
 /* eslint-disable react-refresh/only-export-components */
 const CartContext = createContext(null);
 const storageKey = 'recordia_cart';
+const cartReducer = (state, action) => {
+  if (action.type === 'replace') return action.items;
+  if (action.type === 'clear') return [];
+  throw new Error(`Unsupported cart action: ${action.type}`);
+};
 
 const readCart = () => {
   try {
@@ -16,19 +21,18 @@ const readCart = () => {
 };
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(readCart);
+  const [items, dispatch] = useReducer(cartReducer, undefined, readCart);
   const { user, loading: authLoading } = useAuth();
   const { showError } = useSnackbar();
 
   const persist = useCallback((nextItems) => {
-    setItems(nextItems);
+    dispatch({ type: 'replace', items: nextItems });
     localStorage.setItem(storageKey, JSON.stringify(nextItems));
   }, []);
 
   useEffect(() => {
     if (!authLoading && !user && items.length > 0) {
       // Auth resolution can invalidate cart state loaded before identity was known.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       persist([]);
     }
   }, [authLoading, items.length, persist, user]);
@@ -75,7 +79,10 @@ export function CartProvider({ children }) {
       : entry));
   }, [items, persist]);
 
-  const clearCart = useCallback(() => persist([]), [persist]);
+  const clearCart = useCallback(() => {
+    dispatch({ type: 'clear' });
+    localStorage.removeItem(storageKey);
+  }, []);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const itemsPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 

@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import api from '../../api/axios';
+import { confirmCrudDelete, showCrudSuccess } from '../../utils/alerts';
 
 const schema = Yup.object({
   name: Yup.string().trim().required('Genre name is required'),
@@ -41,10 +42,12 @@ export default function Genres() {
   }, []);
 
   const deleteGenre = async (id) => {
-    if (!window.confirm('Delete this genre?')) return;
+    const confirmation = await confirmCrudDelete('this genre');
+    if (!confirmation.isConfirmed) return;
     try {
       await api.delete(`/admin/genre/${id}`);
       setRows((current) => current.filter((row) => row._id !== id));
+      await showCrudSuccess('Deleted');
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to delete genre');
     }
@@ -97,6 +100,7 @@ export default function Genres() {
                 ? current.map((row) => (row._id === genre._id ? genre : row))
                 : [...current, genre]);
               setEditing(null);
+              await showCrudSuccess(editing._id ? 'Updated' : 'Created');
             } catch (requestError) {
               const message = requestError.response?.data?.message || 'Unable to save genre';
               setError(message);
