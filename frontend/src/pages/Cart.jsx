@@ -1,5 +1,5 @@
 import {
-  Box, Button, Divider, IconButton, MenuItem, Paper, Select, Stack, Typography,
+  Alert, Box, Button, Divider, IconButton, MenuItem, Paper, Select, Stack, Typography,
   Checkbox,
 } from '@mui/material';
 import { useState } from 'react';
@@ -16,6 +16,8 @@ export default function Cart() {
   const { items, changeQuantity, removeFromCart } = useCart();
   const navigate = useNavigate();
   const [selectedIds, setSelectedIds] = useState(() => items.map((item) => item.product));
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountError, setDiscountError] = useState('');
 
   const activeSelectedIds = selectedIds.filter((id) => items.some((item) => item.product === id));
   const selectedItems = items.filter((item) => activeSelectedIds.includes(item.product));
@@ -30,6 +32,14 @@ export default function Cart() {
   };
 
   const toggleAll = () => setSelectedIds(allSelected ? [] : items.map((item) => item.product));
+
+  const applyDiscountCode = (event) => {
+    event.preventDefault();
+    const code = discountCode.trim();
+    setDiscountError(code
+      ? `Discount code "${code}" doesn't exist.`
+      : 'Enter a discount code to apply.');
+  };
 
   if (!items.length) {
     return (
@@ -71,7 +81,19 @@ export default function Cart() {
         </Box>
         <Paper className="retro-summary-panel">
           <Typography className="eyebrow">ORDER SUMMARY</Typography>
-          <Box className="retro-voucher"><input aria-label="Discount voucher" placeholder="Discount voucher" /><Button>Apply</Button></Box>
+          <Box component="form" className="retro-voucher" onSubmit={applyDiscountCode}>
+            <input
+              aria-label="Discount voucher"
+              placeholder="Discount voucher"
+              value={discountCode}
+              onChange={(event) => {
+                setDiscountCode(event.target.value);
+                setDiscountError('');
+              }}
+            />
+            <Button type="submit">Apply</Button>
+          </Box>
+          {discountError && <Alert severity="error" onClose={() => setDiscountError('')}>{discountError}</Alert>}
           <Divider />
           <Stack className="retro-summary-lines" spacing={1.5}>
             <Typography><span>Selected records</span><strong>{selectedItems.length}</strong></Typography>

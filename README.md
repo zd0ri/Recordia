@@ -61,6 +61,7 @@ SMTP_EMAIL=
 SMTP_PASSWORD=
 SMTP_FROM_EMAIL=
 SMTP_FROM_NAME=
+FRONTEND_URL=http://localhost:5173
 ```
 
 For `FIREBASE_PRIVATE_KEY`, keep the escaped newline sequences (`\n`) when placing the service-account key in an environment file. Never commit real credentials. Rotate database, Cloudinary, JWT, Firebase, and SMTP credentials if they have been shared or committed.
@@ -94,11 +95,13 @@ After changing Vite variables, restart the frontend development server.
 - Email/password and Google authentication
 - Profile and avatar management
 - Product, artist, genre, user, order, and review administration
-- Product filters, pagination, and infinite scrolling
+- Database-backed product filters and homepage infinite scrolling
+- Homepage price and rating sliders
+- Email password-reset links
 - Local cart and server-calculated checkout totals
 - Order status workflow with stock handling
 - Order-status HTML email with PDF receipt attachment
-- Completed-order review eligibility and profanity masking
+- Completed-order reviews, purchase-history review links, and collector testimonials
 - Sales dashboard with year/date filters and line/bar charts
 
 ## Validation commands
@@ -114,10 +117,18 @@ npm run build
 
 The project currently has no automated test script; use [checklist.md](./checklist.md) for manual integration testing.
 
+Product reviews are stored in the MongoDB `reviews` collection, which Mongoose
+creates automatically when the first review is saved. Reviews are unique by
+checkout and product, so customers can review the same product again after a
+separate completed checkout. After upgrading, run `npm run migrate:review-indexes`
+from `backend` once to replace the previous product/customer unique index.
+To move reviews embedded in older product documents into the collection, run
+`npm run migrate:reviews` from `backend` after configuring the database connection.
+
 ## Frontend development notes
 
-The frontend uses Vite with React, Material UI, React Router, Formik, Yup,
-Firebase, Axios, Recharts, and the React ESLint tooling. The development
+The frontend uses Vite with React, Material UI, React Router, Redux Toolkit,
+Formik, Yup, Firebase, Axios, Recharts, and the React ESLint tooling. The development
 server provides hot module replacement while `npm run build` creates the
 production bundle.
 

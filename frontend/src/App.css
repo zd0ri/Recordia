@@ -1464,6 +1464,16 @@ footer {
   background: #fff8e8;
 }
 
+.home-filter-panel {
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgba(84, 45, 45, .22);
+  background: #fff8e8;
+}
+
+.home-filter-panel .MuiSlider-root {
+  color: #9a4c2f;
+}
+
 .navbar-filters .MuiSelect-select {
   min-width: 220px;
 }
@@ -2626,6 +2636,17 @@ footer {
   align-items: stretch;
 }
 
+.retro-quantity-stepper {
+  min-width: 132px;
+  border: 2px solid #542d2d;
+  color: #542d2d;
+}
+
+.retro-quantity-stepper .MuiIconButton-root {
+  border-radius: 0;
+  color: inherit;
+}
+
 .retro-quantity {
   min-width: 76px;
   border: 2px solid #542d2d !important;
@@ -3535,6 +3556,568 @@ footer {
 @keyframes record-spin {
   from { transform: translateY(-50%) rotate(0deg); }
   to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Listener account and purchase archive */
+.account-page {
+  --account-ink: #34231c;
+  --account-wine: #542d2d;
+  --account-rust: #a34f32;
+  --account-gold: #d69a2d;
+  --account-paper: #fff8e8;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: .5rem 0 2.5rem;
+}
+
+.profile-page {
+  max-width: 780px;
+}
+
+.account-page-heading {
+  position: relative;
+  display: flex;
+  min-height: 150px;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 1.5rem clamp(1.25rem, 5vw, 3rem);
+  border: 2px solid var(--account-wine);
+  background:
+    linear-gradient(110deg, rgba(255, 248, 232, .98) 0%, rgba(255, 248, 232, .95) 65%, rgba(243, 223, 181, .9) 100%);
+  box-shadow: 7px 7px 0 rgba(84, 45, 45, .15);
+}
+
+.account-eyebrow,
+.account-panel-kicker {
+  color: var(--account-rust);
+  font-family: 'DM Mono', monospace !important;
+  font-size: .64rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase;
+}
+
+.account-page-title {
+  margin: .25rem 0 !important;
+  color: var(--account-wine);
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-size: clamp(2.2rem, 6vw, 3.8rem) !important;
+  line-height: 1.08 !important;
+}
+
+.account-page-subtitle {
+  max-width: 34rem;
+  color: #765d4b;
+  font-family: 'DM Mono', monospace !important;
+  font-size: .76rem !important;
+  line-height: 1.7 !important;
+}
+
+.account-record-mark {
+  position: relative;
+  display: grid;
+  width: 110px;
+  height: 110px;
+  flex: 0 0 110px;
+  place-items: center;
+  margin: 0 1rem 0 2rem;
+  border: 2px solid var(--account-wine);
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle, #2c201a 0 2px, #3e2b23 3px 5px, #201a16 6px 8px);
+  box-shadow: 4px 4px 0 rgba(84, 45, 45, .18);
+  transform: rotate(-12deg);
+}
+
+.account-record-mark::before,
+.account-record-mark::after {
+  position: absolute;
+  width: 72%;
+  height: 1px;
+  background: rgba(255, 248, 232, .24);
+  content: '';
+}
+
+.account-record-mark::after {
+  transform: rotate(90deg);
+}
+
+.account-record-mark span {
+  z-index: 1;
+  width: 29px;
+  height: 29px;
+  border: 5px solid #d69a2d;
+  border-radius: 50%;
+  background: var(--account-wine);
+}
+
+.account-panel {
+  overflow: hidden;
+  padding: clamp(1.25rem, 4vw, 2.5rem) !important;
+  border: 2px solid var(--account-wine) !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(135deg, rgba(255, 248, 232, .98), rgba(255, 248, 232, .98)),
+    radial-gradient(#8b6940 0.6px, transparent .6px) !important;
+  box-shadow: 7px 7px 0 rgba(84, 45, 45, .14) !important;
+}
+
+.account-panel-heading {
+  margin-bottom: 1.4rem;
+  padding-bottom: .85rem;
+  border-bottom: 1px dashed rgba(84, 45, 45, .38);
+}
+
+.account-panel-title {
+  margin-top: .3rem !important;
+  color: var(--account-wine);
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-size: clamp(1.45rem, 4vw, 2rem) !important;
+}
+
+.profile-avatar-editor {
+  position: relative;
+  margin-bottom: .5rem;
+  padding: .75rem 0 1rem;
+}
+
+.profile-avatar-editor .MuiAvatar-root {
+  border: 4px solid var(--account-paper);
+  outline: 2px solid var(--account-gold);
+  box-shadow: 0 4px 12px rgba(52, 35, 28, .18);
+}
+
+.account-page .MuiTextField-root .MuiOutlinedInput-root {
+  background: rgba(255, 250, 240, .7);
+}
+
+.account-page .MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(84, 45, 45, .38);
+}
+
+.account-page .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--account-rust);
+}
+
+.account-page .MuiInputLabel-root {
+  color: #765d4b;
+  font-family: 'DM Mono', monospace;
+}
+
+.account-page .account-primary-button,
+.account-page .account-outline-button {
+  min-height: 44px;
+  border-radius: 0;
+  font-size: .68rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.account-page .account-primary-button {
+  border: 2px solid var(--account-wine);
+  background: var(--account-wine);
+  box-shadow: 3px 3px 0 rgba(84, 45, 45, .2);
+  color: var(--account-paper);
+}
+
+.account-page .account-primary-button:hover {
+  border-color: var(--account-rust);
+  background: var(--account-rust);
+}
+
+.account-page .account-outline-button {
+  border: 1px solid var(--account-wine);
+  color: var(--account-wine);
+}
+
+.account-page .account-outline-button:hover {
+  background: rgba(214, 154, 45, .13);
+}
+
+.account-tabs {
+  min-height: 48px;
+  border-bottom: 2px solid rgba(84, 45, 45, .3);
+}
+
+.account-tabs .MuiTab-root {
+  min-height: 48px;
+  color: #765d4b;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.account-tabs .Mui-selected {
+  color: var(--account-wine) !important;
+}
+
+.account-tabs .MuiTabs-indicator {
+  height: 4px;
+  background: var(--account-rust);
+}
+
+.account-order-card,
+.account-purchase-card {
+  position: relative;
+  display: flex;
+  min-height: 96px;
+  align-items: center;
+  gap: 1rem;
+  overflow: hidden;
+  padding: 1.1rem 1.4rem 1.1rem 1.6rem !important;
+  border: 1px solid rgba(84, 45, 45, .42) !important;
+  border-radius: 0 !important;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 30px, rgba(84, 45, 45, .025) 31px),
+    var(--account-paper) !important;
+  box-shadow: 4px 4px 0 rgba(84, 45, 45, .12) !important;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.account-order-card:hover,
+.account-purchase-card:hover {
+  box-shadow: 6px 6px 0 rgba(84, 45, 45, .17) !important;
+  transform: translate(-1px, -1px);
+}
+
+.account-order-card::before,
+.account-purchase-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7px;
+  background: repeating-linear-gradient(180deg, var(--account-wine) 0 8px, var(--account-gold) 8px 16px);
+  content: '';
+}
+
+.account-order-stamp {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid var(--account-rust);
+  border-radius: 50%;
+  color: var(--account-rust);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  transform: rotate(-10deg);
+}
+
+.account-order-content {
+  width: 100%;
+}
+
+.account-order-id,
+.account-order-meta,
+.account-order-total {
+  display: grid;
+  gap: .25rem;
+}
+
+.account-order-id .MuiLink-root {
+  color: var(--account-wine);
+  font-family: 'DM Mono', monospace;
+  font-size: .85rem;
+  font-weight: 700;
+  text-decoration-color: var(--account-gold);
+  text-underline-offset: 3px;
+}
+
+.account-order-meta .MuiTypography:last-child {
+  color: #765d4b;
+  font-size: .76rem;
+}
+
+.account-order-total {
+  text-align: right;
+}
+
+.account-order-total .MuiTypography:last-child {
+  color: var(--account-wine);
+  font-family: 'DM Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.account-page .account-status-chip {
+  border: 1px solid rgba(84, 45, 45, .4);
+  border-radius: 999px;
+  background: #eee4cd;
+  color: var(--account-wine);
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.account-page .account-status-chip.status-completed {
+  border-color: #4b6749;
+  background: #e5ead7;
+  color: #3e583d;
+}
+
+.account-page .account-status-chip.status-cancelled {
+  border-color: #9c573f;
+  background: #f3e2d4;
+  color: #8e432d;
+}
+
+.account-purchase-art {
+  position: relative;
+  display: grid;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  place-items: center;
+  border: 1px solid rgba(84, 45, 45, .7);
+  background: #e7d6b1;
+}
+
+.account-purchase-art::before {
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, #2c201a 0 2px, #4a352a 3px 4px);
+  content: '';
+}
+
+.account-purchase-art span {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--account-gold);
+  border-radius: 50%;
+  background: var(--account-wine);
+}
+
+.account-purchase-copy {
+  flex: 1;
+  min-width: 140px;
+  gap: .35rem;
+}
+
+.account-purchase-copy .MuiTypography:first-child {
+  color: var(--account-wine);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.05rem;
+}
+
+.account-purchase-copy .MuiTypography:last-child {
+  color: #806b56;
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+}
+
+@media (max-width: 600px) {
+  .account-page-heading {
+    min-height: 128px;
+    padding: 1.1rem;
+  }
+
+  .account-record-mark {
+    width: 70px;
+    height: 70px;
+    flex-basis: 70px;
+    margin: 0 0 0 .75rem;
+  }
+
+  .account-record-mark span {
+    width: 22px;
+    height: 22px;
+    border-width: 4px;
+  }
+
+  .account-page-subtitle {
+    max-width: 18rem;
+    font-size: .65rem !important;
+  }
+
+  .account-order-card,
+  .account-purchase-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: .8rem;
+    padding: 1rem .85rem 1rem 1.1rem !important;
+  }
+
+  .account-order-stamp {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    font-size: 1.1rem;
+  }
+
+  .account-order-content {
+    gap: .8rem;
+  }
+
+  .account-order-total {
+    text-align: left;
+  }
+
+  .account-purchase-card .MuiButton-root {
+    width: 100%;
+  }
+}
+
+.account-page-title,
+.account-panel-title,
+.reviews-panel h4.account-page-title {
+  color: #34231c;
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-weight: 800 !important;
+  letter-spacing: -.045em;
+  text-shadow: .45px 0 currentColor, -.35px 0 currentColor;
+}
+
+.review-section-title {
+  color: #542d2d !important;
+  font-size: clamp(2rem, 5vw, 3rem) !important;
+  line-height: 1.08 !important;
+}
+
+.admin-reviews-title {
+  margin-bottom: .35rem !important;
+}
+
+.order-detail-panel {
+  position: relative;
+}
+
+.order-detail-status,
+.order-payment-note {
+  display: flex;
+}
+
+.order-payment-note {
+  min-width: 130px;
+  flex-direction: column;
+  gap: .3rem;
+  text-align: right;
+}
+
+.order-payment-note .MuiTypography:last-child {
+  color: #34231c;
+  font-family: 'DM Mono', monospace;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.order-shipping-note {
+  padding: 1rem 1.1rem;
+  border: 1px dashed rgba(84, 45, 45, .35);
+  background: rgba(243, 223, 181, .28);
+}
+
+.order-shipping-note .MuiTypography:last-child {
+  margin-top: .45rem;
+  color: #684a39;
+  font-family: 'DM Mono', monospace;
+  font-size: .76rem;
+  line-height: 1.7;
+}
+
+.order-items-list {
+  display: grid;
+}
+
+.order-items-list > .account-panel-kicker {
+  margin-bottom: .45rem;
+}
+
+.order-detail-item {
+  gap: 1rem;
+  padding: .8rem 0;
+  border-bottom: 1px dashed rgba(84, 45, 45, .24);
+}
+
+.order-detail-item .MuiTypography:first-child {
+  color: #542d2d;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: .98rem;
+  font-weight: 700;
+}
+
+.order-detail-item .MuiTypography:nth-child(2) {
+  margin-top: .2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+}
+
+.order-detail-item > .MuiTypography:last-child {
+  color: #542d2d;
+  font-family: 'DM Mono', monospace;
+  font-size: .78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.order-detail-totals {
+  display: grid;
+  gap: .55rem;
+  max-width: 400px;
+  width: 100%;
+  align-self: flex-end;
+}
+
+.order-detail-totals > .MuiTypography {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #765d4b;
+  font-family: 'DM Mono', monospace;
+  font-size: .75rem;
+}
+
+.order-detail-totals strong {
+  color: #34231c;
+  font-weight: 500;
+}
+
+.order-detail-totals .order-grand-total {
+  padding-top: .4rem;
+  color: #542d2d;
+  font-size: 1.05rem;
+}
+
+.order-detail-totals .order-grand-total strong {
+  color: #542d2d;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.order-review-section {
+  padding: 1.25rem;
+  border: 2px solid #542d2d;
+  background: linear-gradient(120deg, #f3dfb5, #fff8e8 70%);
+  box-shadow: 4px 4px 0 rgba(84, 45, 45, .12);
+}
+
+.order-review-heading {
+  margin: .25rem 0 .85rem !important;
+  color: #542d2d;
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 600px) {
+  .order-detail-panel {
+    padding: 1.1rem !important;
+  }
+
+  .order-payment-note {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .order-review-section {
+    padding: .9rem;
+  }
 }
 
 @keyframes card-record-spin {

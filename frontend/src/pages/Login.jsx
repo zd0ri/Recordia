@@ -117,6 +117,7 @@ export default function Login() {
               <Button className="social-button facebook-button" disabled={isSubmitting} onClick={continueWithFacebook} startIcon={<FacebookIcon />} type="button" variant="outlined">
                 Facebook
               </Button>
+              <Typography><RouterLink to="/password/forgot">Forgot password?</RouterLink></Typography>
               <Typography className="auth-switch">New to Recordia? <RouterLink to="/register">Create an account</RouterLink></Typography>
             </Stack>
           </Form>

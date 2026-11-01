@@ -43,27 +43,16 @@ class APIFeatures {
             this.filters.genre = this.queryStr.genre;
         }
 
+        if (this.queryStr.album) {
+            this.filters.album_title = this.queryStr.album;
+        }
+
+        if (this.queryStr.merch_type) {
+            this.filters.merch_type = this.queryStr.merch_type;
+        }
+
         if (this.queryStr.artist) {
             this.filters.artist = this.queryStr.artist;
-        }
-
-        if (this.queryStr['ratings[gte]'] !== undefined) {
-            this.filters.ratings = {
-                $gte: Number(this.queryStr['ratings[gte]'])
-            };
-        }
-
-        if (this.queryStr['reviews[gte]'] !== undefined) {
-            this.filters.numOfReviews = {
-                $gte: Number(this.queryStr['reviews[gte]'])
-            };
-        }
-
-        if (this.queryStr.review) {
-            this.filters['reviews.comment'] = {
-                $regex: this.queryStr.review.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-                $options: 'i'
-            };
         }
 
         this.query = this.query.find(this.filters);

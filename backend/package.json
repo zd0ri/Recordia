@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "migrate:reviews": "node scripts/migrateEmbeddedReviews.js",
+    "migrate:review-indexes": "node scripts/syncReviewIndexes.js"
   },
   "author": "",
   "license": "ISC",

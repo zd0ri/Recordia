@@ -7,13 +7,6 @@ import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
 
 const collections = {
-  'new-arrivals': {
-    label: 'New arrivals',
-    kicker: 'JUST IN / FRESH PRESSINGS',
-    title: 'New to the bins.',
-    description: 'The latest additions to the Recordia collection, pulled from our real inventory.',
-    filter: () => true,
-  },
   vinyl: {
     label: 'Vinyl',
     kicker: 'THE CORE COLLECTION',
@@ -28,11 +21,11 @@ const collections = {
     description: 'Turntables, speakers, and listening essentials are being tuned up for a future drop.',
   },
   accessories: {
-    label: 'Accessories',
+    label: 'Merch',
     kicker: 'THE RECORD-STORE EXTRAS',
     title: 'Carry the culture.',
-    description: 'Posters, totes, and accessories from the current Recordia inventory.',
-    filter: (product) => ['Accessory', 'Tote Bag', 'Poster'].includes(product.merch_type),
+    description: 'Shirts, posters, pins, and keychains from the current Recordia inventory.',
+    filter: (product) => ['T-Shirt', 'Poster', 'Pin', 'Keychain', 'Accessory'].includes(product.merch_type),
   },
   'pre-orders': {
     label: 'Pre-orders',
@@ -57,7 +50,7 @@ const collections = {
 
 export default function CollectionLanding() {
   const { collection } = useParams();
-  const section = collections[collection] || collections['new-arrivals'];
+  const section = collections[collection] || collections.vinyl;
   const [products, setProducts] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(!section.journal);
@@ -69,9 +62,7 @@ export default function CollectionLanding() {
       .then(({ data }) => {
         if (cancelled) return;
         const items = (data.products || []).filter(section.filter || (() => false));
-        setProducts(collection === 'new-arrivals'
-          ? items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          : items);
+        setProducts(items);
       })
       .catch((requestError) => {
         if (!cancelled) setError(requestError.response?.data?.message || 'Unable to load collection');

@@ -377,6 +377,7 @@ exports.customerSales = catchAsync(async (req, res, next) => {
 exports.salesPerMonth = catchAsync(async (req, res, next) => {
     const year = Number(req.query.year);
     const selectedYear = Number.isInteger(year) && year >= 1970 ? year : new Date().getFullYear();
+    const hasDateRange = Boolean(req.query.startDate || req.query.endDate);
     const start = req.query.startDate
         ? new Date(`${req.query.startDate}T00:00:00.000Z`)
         : new Date(Date.UTC(selectedYear, 0, 1));
@@ -403,41 +404,48 @@ exports.salesPerMonth = catchAsync(async (req, res, next) => {
         },
         {
             $group: {
-                _id: {
-                    year: { $year: '$createdAt' },
-                    month: { $month: '$createdAt' }
-                },
+                _id: hasDateRange
+                    ? { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }
+                    : {
+                        year: { $year: '$createdAt' },
+                        month: { $month: '$createdAt' }
+                    },
                 sales: { $sum: '$totalPrice' },
                 orders: { $sum: 1 }
             }
         },
-        { $sort: { '_id.year': 1, '_id.month': 1 } }
+        {
+            $sort: hasDateRange
+                ? { _id: 1 }
+                : { '_id.year': 1, '_id.month': 1 }
+        }
     ]);
 
     const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const groupedByMonth = new Map(
-        groupedSales.map((item) => [`${item._id.year}-${item._id.month}`, item])
-    );
-    const hasDateRange = Boolean(req.query.startDate || req.query.endDate);
-    const months = monthLabels.map((label, index) => {
-        const month = index + 1;
-        const item = hasDateRange
-            ? groupedSales
-                .filter((entry) => entry._id.month === month)
-                .reduce(
-                    (result, entry) => ({
-                        sales: result.sales + entry.sales,
-                        orders: result.orders + entry.orders
-                    }),
-                    { sales: 0, orders: 0 }
-                )
-            : groupedByMonth.get(`${selectedYear}-${month}`);
-        return {
-            month: label,
-            sales: item?.sales || 0,
-            orders: item?.orders || 0
-        };
-    });
+    const groupedByPeriod = new Map(groupedSales.map((item) => [
+        hasDateRange ? item._id : `${item._id.year}-${item._id.month}`,
+        item
+    ]));
+    const salesPeriods = hasDateRange
+        ? Array.from({ length: Math.ceil((end - start) / 86400000) }, (_, index) => {
+            const date = new Date(start);
+            date.setUTCDate(date.getUTCDate() + index);
+            const dateLabel = date.toISOString().slice(0, 10);
+            const item = groupedByPeriod.get(dateLabel);
+            return {
+                date: dateLabel,
+                sales: item?.sales || 0,
+                orders: item?.orders || 0
+            };
+        })
+        : monthLabels.map((label, index) => {
+            const item = groupedByPeriod.get(`${selectedYear}-${index + 1}`);
+            return {
+                month: label,
+                sales: item?.sales || 0,
+                orders: item?.orders || 0
+            };
+        });
     const totals = groupedSales.reduce(
         (result, item) => ({
             sales: result.sales + item.sales,
@@ -451,7 +459,8 @@ exports.salesPerMonth = catchAsync(async (req, res, next) => {
         year: selectedYear,
         startDate: start.toISOString(),
         endDate: end.toISOString(),
-        months,
+        months: salesPeriods,
+        dateRange: hasDateRange,
         totalSales: totals.sales,
         orderCount: totals.orders
     })

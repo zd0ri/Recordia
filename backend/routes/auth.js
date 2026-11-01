@@ -6,6 +6,7 @@ const {
     loginUser,
     firebaseLogin,
     forgotPassword,
+    resetPasswordWithCode,
     resetPassword,
     getUserProfile,
     updateProfile,
@@ -22,6 +23,7 @@ router.post('/register', upload.single("avatar"), registerUser);
 router.post('/login', loginUser);
 router.post('/firebase-login', firebaseLogin);
 router.post('/password/forgot', forgotPassword);
+router.put('/password/reset', resetPasswordWithCode);
 router.put('/password/reset/:token', resetPassword);
 router.get('/me', isAuthenticatedUser, getUserProfile)
 router.put('/me/update', isAuthenticatedUser, upload.single("avatar"), updateProfile)

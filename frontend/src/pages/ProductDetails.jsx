@@ -6,16 +6,14 @@ import {
   Box,
   Button,
   IconButton,
-  MenuItem,
   Paper,
   Rating,
-  Select,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -29,6 +27,8 @@ const reviewSchema = Yup.object({
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const orderId = new URLSearchParams(location.search).get('orderId') || '';
   const [product, setProduct] = useState(null);
   const [imageIndex, setImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -37,7 +37,8 @@ export default function ProductDetails() {
   const [reviews, setReviews] = useState([]);
   const [canReview, setCanReview] = useState(false);
   const [reviewImage, setReviewImage] = useState(null);
-  const { addToCart } = useCart();
+  const [reviewImagePreview, setReviewImagePreview] = useState('');
+  const { addToCart, items } = useCart();
   const { user } = useAuth();
   const { showSuccess } = useSnackbar();
 
@@ -64,32 +65,47 @@ export default function ProductDetails() {
         setReviews([]);
       }
 
-      if (!user) {
+      if (!user || !orderId) {
         setCanReview(false);
         return;
       }
       try {
-        const { data } = await api.get('/review/can-review', { params: { productId: id } });
+        const { data } = await api.get('/review/can-review', { params: { productId: id, orderId } });
         setCanReview(Boolean(data.canReview));
       } catch {
         setCanReview(false);
       }
     };
     loadReviews();
-  }, [id, user]);
+  }, [id, orderId, user]);
+
+  useEffect(() => {
+    if (!loading && new URLSearchParams(location.search).get('review') === '1') {
+      document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [loading, location.search]);
+
+  useEffect(() => () => {
+    if (reviewImagePreview) URL.revokeObjectURL(reviewImagePreview);
+  }, [reviewImagePreview]);
 
   if (error) return <Alert severity="error">{error}</Alert>;
   if (loading || !product) return <Typography>Loading product...</Typography>;
 
   const images = product.images?.length ? product.images : [{ url: 'https://placehold.co/800x800?text=Recordia' }];
-  const maxQuantity = Math.max(1, product.stocks || 0);
-  const ownReview = reviews.find((review) => review.user?._id === user?._id || review.user === user?._id);
+  const currentCartQuantity = items.find((item) => item.product === product._id)?.quantity || 0;
+  const maxQuantity = Math.max(0, product.stocks - currentCartQuantity);
+  const purchaseQuantity = Math.min(quantity, Math.max(1, maxQuantity));
+  const ownReview = reviews.find((review) => (
+    String(review.order?._id || review.order) === orderId
+    && String(review.user?._id || review.user) === String(user?._id)
+  ));
   const refreshReviews = async () => {
     const { data } = await api.get('/reviews', { params: { productId: id } });
     setReviews(data.reviews || []);
   };
   const handleAddToCart = () => {
-    if (addToCart(product, quantity)) {
+    if (addToCart(product, purchaseQuantity)) {
       showSuccess(`${product.album_title} added to your cart`);
     }
   };
@@ -112,7 +128,10 @@ export default function ProductDetails() {
           <Stack className="product-copy" spacing={2}>
             <Typography className="eyebrow">NOW SPINNING / CATALOGUE NO. {String(product._id).slice(-6).toUpperCase()}</Typography>
             <Typography className="product-title" variant="h2">{product.album_title}</Typography>
-            <Typography className="product-artist" variant="h6">{product.artist?.name} <span>·</span> {product.genre?.name}</Typography>
+            <Typography className="product-artist" variant="h6">
+              {product.artist?.name || product.merch_type}
+              {product.genre?.name && <> <span>·</span> {product.genre.name}</>}
+            </Typography>
             <Typography className="product-price">₱{Number(product.price).toFixed(2)}</Typography>
             <Box className="product-rule" />
             <Typography className="product-description">{product.description}</Typography>
@@ -121,20 +140,29 @@ export default function ProductDetails() {
               <span>CONDITION <strong>ARCHIVE READY</strong></span>
             </Box>
             <Typography className={`product-stock ${product.stocks > 0 ? 'in-stock' : 'out-stock'}`}>{product.stocks > 0 ? `${product.stocks} copies in the crate` : 'Out of stock'}</Typography>
-            <Stack className="product-buy-row" direction="row" spacing={1.5}>
-              <Select className="retro-quantity" size="small" value={quantity} disabled={!product.stocks} onChange={(event) => setQuantity(event.target.value)}>
-                {Array.from({ length: maxQuantity }, (_, index) => <MenuItem key={index + 1} value={index + 1}>{index + 1}</MenuItem>)}
-              </Select>
-              <Button className="retro-add-button" disabled={!product.stocks} variant="contained" onClick={handleAddToCart}>
-                Add to crate
-              </Button>
-            </Stack>
-            <Typography className="product-note">Free shipping on orders over ₱3,000 <span>✦</span> Packed with care</Typography>
+            {user?.role !== 'admin' ? (
+              <>
+                <Stack className="product-buy-row" direction="row" spacing={1.5}>
+                  <Stack className="retro-quantity-stepper" alignItems="center" direction="row">
+                    <IconButton aria-label="Decrease quantity" disabled={!maxQuantity || purchaseQuantity <= 1} onClick={() => setQuantity((current) => Math.max(1, current - 1))}>−</IconButton>
+                    <Typography aria-live="polite" sx={{ minWidth: 24, textAlign: 'center' }}>{purchaseQuantity}</Typography>
+                    <IconButton aria-label="Increase quantity" disabled={purchaseQuantity >= maxQuantity} onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}>+</IconButton>
+                  </Stack>
+                  <Button className="retro-add-button" disabled={!maxQuantity} variant="contained" onClick={handleAddToCart}>
+                    Add to crate
+                  </Button>
+                </Stack>
+                {product.stocks > 0 && !maxQuantity && <Typography color="text.secondary">You have reached the available stock limit in your crate.</Typography>}
+                <Typography className="product-note">Free shipping on orders over ₱3,000 <span>✦</span> Packed with care</Typography>
+              </>
+            ) : (
+              <Typography color="text.secondary">Shopping is unavailable for admin accounts.</Typography>
+            )}
           </Stack>
         </Stack>
       </Paper>
-      <Paper className="reviews-panel" sx={{ p: 3 }}>
-        <Typography gutterBottom variant="h4">Reviews</Typography>
+      <Paper className="reviews-panel" id="reviews" sx={{ p: 3 }}>
+        <Typography className="account-page-title review-section-title" gutterBottom variant="h4">Reviews</Typography>
         {!reviews.length && <Typography color="text.secondary">No reviews yet.</Typography>}
         <Stack spacing={2}>
           {reviews.map((review) => (
@@ -147,6 +175,14 @@ export default function ProductDetails() {
                 </Typography>
               </Stack>
               <Typography>{review.comment}</Typography>
+              {review.image?.url && (
+                <Box
+                  component="img"
+                  src={review.image.url}
+                  alt={`Review by ${review.name}`}
+                  sx={{ display: 'block', maxHeight: 280, maxWidth: '100%', mt: 1, objectFit: 'contain' }}
+                />
+              )}
             </Box>
           ))}
         </Stack>
@@ -161,10 +197,12 @@ export default function ProductDetails() {
                 formData.append('rating', values.rating);
                 formData.append('comment', values.comment);
                 formData.append('productId', id);
+                formData.append('orderId', orderId);
                 if (reviewImage) formData.append('image', reviewImage);
                 await api.put('/review', formData);
                 await refreshReviews();
                 setReviewImage(null);
+                setReviewImagePreview('');
                 setStatus('');
               } catch (requestError) {
                 setStatus(requestError.response?.data?.message || 'Unable to save review');
@@ -177,17 +215,34 @@ export default function ProductDetails() {
               <Form>
                 <Stack spacing={2} sx={{ mt: 3 }}>
                   {status && <Alert severity="error">{status}</Alert>}
-                  <Typography variant="h6">{ownReview ? 'Edit your review' : 'Write a review'}</Typography>
+                  <Typography variant="h6">{ownReview ? 'Update your review' : 'Write a review'}</Typography>
                   <Rating value={values.rating} onChange={(_, value) => setFieldValue('rating', value || 0)} />
                   {touched.rating && errors.rating && <Typography color="error" variant="caption">{errors.rating}</Typography>}
                   <Field as={TextField} fullWidth multiline minRows={3} name="comment" label="Comment" error={touched.comment && !!errors.comment} helperText={touched.comment && errors.comment} />
+                  {(reviewImagePreview || (!reviewImage && ownReview?.image?.url)) && (
+                    <Box
+                      component="img"
+                      src={reviewImagePreview || ownReview.image.url}
+                      alt={reviewImagePreview ? 'Selected review image preview' : 'Previously uploaded review image'}
+                      sx={{ border: '1px solid rgba(84, 45, 45, .35)', maxHeight: 280, maxWidth: '100%', objectFit: 'contain', width: 'fit-content' }}
+                    />
+                  )}
                   <Button component="label" variant="outlined">
-                    {reviewImage ? reviewImage.name : 'Add review image'}
-                    <input hidden type="file" accept="image/png,image/jpeg" onChange={(event) => setReviewImage(event.target.files?.[0] || null)} />
+                    {reviewImage ? reviewImage.name : ownReview?.image?.url ? 'Replace review image' : 'Add review image'}
+                    <input
+                      hidden
+                      type="file"
+                      accept="image/png,image/jpeg"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0] || null;
+                        setReviewImage(file);
+                        setReviewImagePreview(file ? URL.createObjectURL(file) : '');
+                      }}
+                    />
                   </Button>
                   <Stack direction="row" spacing={1}>
                     <Button disabled={isSubmitting} type="submit" variant="contained">{ownReview ? 'Update review' : 'Submit review'}</Button>
-                    {ownReview && <Button color="error" disabled={isSubmitting} onClick={async () => { await api.delete('/review/me', { params: { productId: id } }); await refreshReviews(); }}>Delete review</Button>}
+                    {ownReview && <Button color="error" disabled={isSubmitting} onClick={async () => { await api.delete('/review/me', { params: { productId: id, orderId } }); await refreshReviews(); }}>Delete review</Button>}
                   </Stack>
                 </Stack>
               </Form>

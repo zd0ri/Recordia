@@ -4,9 +4,9 @@ export const MERCH_TYPES = [
   'Vinyl',
   'T-Shirt',
   'Poster',
-  'Tote Bag',
+  'Pin',
+  'Keychain',
   'Accessory',
-  'Other',
 ];
 
 export const USER_ROLES = ['user', 'admin'];

@@ -162,37 +162,99 @@ exports.firebaseLogin = catchAsync(async (req, res, next) => {
 });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-    const user = await User.findOne({ email: req.body.email });
+    const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
+    const escapedEmail = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = email
+        ? await User.findOne({ email: { $regex: `^${escapedEmail}$`, $options: 'i' } })
+        : null;
     if (!user) {
-        return res.status(404).json({ error: 'User not found with this email' })
-
+        return res.status(200).json({
+            success: true,
+            message: 'If an account exists for that email, a password reset code has been sent.'
+        });
     }
-    // Get reset token
-    const resetToken = user.getResetPasswordToken();
+
+    const resetCode = crypto.randomInt(100000, 1000000).toString();
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetCode).digest('hex');
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+    user.resetPasswordAttempts = 0;
     await user.save({ validateBeforeSave: false });
-    // Create reset password url
-    const resetUrl = `${req.protocol}://localhost:5173/password/reset/${resetToken}`;
-    const message = `Your password reset token is as follow:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`
+
     try {
         await sendEmail({
             email: user.email,
-            subject: 'ShopIT Password Recovery',
-            message
-        })
+            subject: 'Your Recordia password reset code',
+            html: `
+              <div style="background:#f4ead2;padding:32px 16px;color:#34231c;font-family:Georgia,serif;">
+                <div style="max-width:520px;margin:auto;border:3px solid #542d2d;background:#fff8e8;box-shadow:8px 8px 0 #d69a2d;">
+                  <div style="background:#542d2d;padding:22px;text-align:center;color:#fff8e8;">
+                    <div style="color:#f3bd3b;font:700 12px monospace;letter-spacing:3px;">RECORDIA / ACCOUNT DESK</div>
+                    <h1 style="margin:12px 0 0;font-size:30px;">Password reset</h1>
+                  </div>
+                  <div style="padding:28px;text-align:center;">
+                    <p style="font:15px monospace;line-height:1.6;">Enter this one-time code to choose a new password:</p>
+                    <p style="display:inline-block;margin:12px 0;padding:14px 22px;border:2px dashed #9d4e31;color:#542d2d;font:bold 32px monospace;letter-spacing:8px;">${resetCode}</p>
+                    <p style="font:13px monospace;line-height:1.6;">This code expires in 10 minutes and can only be used once.</p>
+                    <p style="color:#765d4b;font:12px monospace;">If you did not request a reset, you can ignore this email.</p>
+                  </div>
+                </div>
+              </div>
+            `
+        });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            message: `Email sent to: ${user.email}`
-        })
-
+            message: 'If an account exists for that email, a password reset code has been sent.'
+        });
     } catch (error) {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
+        user.resetPasswordAttempts = 0;
         await user.save({ validateBeforeSave: false });
-        return res.status(500).json({ error: error.message })
-
+        return next(new ErrorHandler('Unable to send password reset email', 500));
     }
 })
+
+exports.resetPasswordWithCode = catchAsync(async (req, res, next) => {
+    const { email, code, password, confirmPassword } = req.body;
+    if (typeof email !== 'string' || typeof code !== 'string' || !/^\d{6}$/.test(code)) {
+        return next(new ErrorHandler('A valid email and 6-digit reset code are required', 400));
+    }
+    if (password !== confirmPassword) {
+        return next(new ErrorHandler('Password does not match', 400));
+    }
+    if (typeof password !== 'string' || password.length < 6) {
+        return next(new ErrorHandler('Password must be at least 6 characters', 400));
+    }
+
+    const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+    const escapedEmail = email.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = await User.findOne({
+        email: { $regex: `^${escapedEmail}$`, $options: 'i' },
+        resetPasswordExpire: { $gt: Date.now() }
+    });
+    if (!user || user.resetPasswordAttempts >= 5 || user.resetPasswordToken !== hashedCode) {
+        if (user && user.resetPasswordAttempts < 5) {
+            user.resetPasswordAttempts += 1;
+            if (user.resetPasswordAttempts >= 5) {
+                user.resetPasswordExpire = Date.now();
+            }
+            await user.save({ validateBeforeSave: false });
+        }
+        return next(new ErrorHandler('Password reset code is invalid or has expired', 400));
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    user.resetPasswordAttempts = 0;
+    await user.save();
+
+    return res.status(200).json({
+        success: true,
+        message: 'Password has been reset. You can now sign in.'
+    });
+});
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
     // Hash URL token

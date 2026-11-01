@@ -21,8 +21,16 @@ import { MERCH_TYPES } from '../../constants';
 
 const schema = Yup.object({
   album_title: Yup.string().trim().required('Album title is required'),
-  artist: Yup.string().required('Artist is required'),
-  genre: Yup.string().required('Genre is required'),
+  artist: Yup.string().when('merch_type', {
+    is: 'Vinyl',
+    then: (field) => field.required('Artist is required'),
+    otherwise: (field) => field.notRequired(),
+  }),
+  genre: Yup.string().when('merch_type', {
+    is: 'Vinyl',
+    then: (field) => field.required('Genre is required'),
+    otherwise: (field) => field.notRequired(),
+  }),
   merch_type: Yup.string().oneOf(MERCH_TYPES).required('Merchandise type is required'),
   price: Yup.number().typeError('Price must be a number').min(0, 'Price cannot be negative').required('Price is required'),
   description: Yup.string().trim().required('Description is required'),
@@ -110,6 +118,10 @@ export default function ProductForm() {
           setError('');
           try {
             const payload = { ...values };
+            if (payload.merch_type !== 'Vinyl') {
+              payload.artist = null;
+              payload.genre = null;
+            }
             if (!payload.images.length) delete payload.images;
             if (!editing) delete payload.existingImageIds;
             const response = editing
@@ -133,20 +145,24 @@ export default function ProductForm() {
                 <Field as={TextField} fullWidth name="album_title" label="Album title" error={touched.album_title && !!errors.album_title} helperText={touched.album_title && errors.album_title} />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Field as={TextField} fullWidth select name="artist" label="Artist" error={touched.artist && !!errors.artist} helperText={touched.artist && errors.artist}>
-                  {artists.map((artist) => <MenuItem key={artist._id} value={artist._id}>{artist.name}</MenuItem>)}
-                </Field>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Field as={TextField} fullWidth select name="genre" label="Genre" error={touched.genre && !!errors.genre} helperText={touched.genre && errors.genre}>
-                  {genres.map((genre) => <MenuItem key={genre._id} value={genre._id}>{genre.name}</MenuItem>)}
-                </Field>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
                 <Field as={TextField} fullWidth select name="merch_type" label="Merchandise type" error={touched.merch_type && !!errors.merch_type} helperText={touched.merch_type && errors.merch_type}>
                   {MERCH_TYPES.map((type) => <MenuItem key={type} value={type}>{type}</MenuItem>)}
                 </Field>
               </Grid>
+              {values.merch_type === 'Vinyl' && (
+                <>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Field as={TextField} fullWidth select name="artist" label="Artist" error={touched.artist && !!errors.artist} helperText={touched.artist && errors.artist}>
+                      {artists.map((artist) => <MenuItem key={artist._id} value={artist._id}>{artist.name}</MenuItem>)}
+                    </Field>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Field as={TextField} fullWidth select name="genre" label="Genre" error={touched.genre && !!errors.genre} helperText={touched.genre && errors.genre}>
+                      {genres.map((genre) => <MenuItem key={genre._id} value={genre._id}>{genre.name}</MenuItem>)}
+                    </Field>
+                  </Grid>
+                </>
+              )}
               <Grid size={{ xs: 12, md: 6 }}>
                 <Field as={TextField} fullWidth name="price" label="Price" type="number" inputProps={{ min: 0, step: '0.01' }} error={touched.price && !!errors.price} helperText={touched.price && errors.price} />
               </Grid>

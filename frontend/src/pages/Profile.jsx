@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import {
   Alert,
   Avatar,
+  Box,
   Button,
   Divider,
   Paper,
@@ -50,9 +51,20 @@ export default function Profile() {
   });
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 680, mx: 'auto' }}>
-      <Paper sx={{ p: { xs: 3, md: 5 } }}>
-        <Typography gutterBottom variant="h3">Your profile</Typography>
+    <Stack className="account-page profile-page" spacing={3}>
+      <Box className="account-page-heading">
+        <Box>
+          <Typography className="account-eyebrow">RECORDIA / LISTENER CARD</Typography>
+          <Typography className="account-page-title" variant="h2">Your profile</Typography>
+          <Typography className="account-page-subtitle">A few details for your corner of the record room.</Typography>
+        </Box>
+        <Box className="account-record-mark" aria-hidden="true"><span /></Box>
+      </Box>
+      <Paper className="account-panel profile-panel">
+        <Box className="account-panel-heading">
+          <Typography className="account-panel-kicker">01 / YOUR DETAILS</Typography>
+          <Typography className="account-panel-title" variant="h4">Listener information</Typography>
+        </Box>
         {profileMessage && <Alert sx={{ mb: 2 }} severity="success">{profileMessage}</Alert>}
         <Formik
           enableReinitialize
@@ -76,10 +88,11 @@ export default function Profile() {
         >
           {({ errors, touched, isSubmitting, setFieldValue }) => (
             <Form>
-              <Stack spacing={2}>
-                <Stack alignItems="center" spacing={1}>
-                  <Avatar src={preview || undefined} sx={{ height: 96, width: 96 }} />
-                  <Button component="label" variant="outlined">
+              <Stack className="profile-form" spacing={2}>
+                <Stack className="profile-avatar-editor" alignItems="center" spacing={1}>
+                  <Avatar src={preview || undefined} sx={{ height: 104, width: 104 }} />
+                  <Typography className="account-panel-kicker">THE LISTENER</Typography>
+                  <Button className="account-outline-button" component="label" variant="outlined">
                     Change avatar
                     <input
                       hidden
@@ -97,15 +110,18 @@ export default function Profile() {
                 </Stack>
                 <Field as={TextField} name="name" label="Name" error={touched.name && !!errors.name} helperText={touched.name && errors.name} />
                 <Field as={TextField} name="email" label="Email" type="email" error={touched.email && !!errors.email} helperText={touched.email && errors.email} />
-                <Button disabled={isSubmitting} type="submit" variant="contained">Save profile</Button>
+                <Button className="account-primary-button" disabled={isSubmitting} type="submit" variant="contained">Save profile</Button>
               </Stack>
             </Form>
           )}
         </Formik>
       </Paper>
 
-      <Paper sx={{ p: { xs: 3, md: 5 } }}>
-        <Typography gutterBottom variant="h4">{hasPassword ? 'Change password' : 'Create a password'}</Typography>
+      <Paper className="account-panel password-panel">
+        <Box className="account-panel-heading">
+          <Typography className="account-panel-kicker">02 / SECURITY</Typography>
+          <Typography className="account-panel-title" variant="h4">{hasPassword ? 'Change password' : 'Create a password'}</Typography>
+        </Box>
         {!hasPassword && (
           <Typography color="text.secondary" sx={{ mb: 2 }}>
             You signed in with Google. You can optionally create a Recordia password to also sign in with your email.
@@ -130,12 +146,12 @@ export default function Profile() {
         >
           {({ errors, touched, isSubmitting, values }) => (
             <Form>
-              <Stack spacing={2}>
+              <Stack className="profile-form" spacing={2}>
                 {hasPassword && <Field as={TextField} name="oldPassword" label="Current password" type="password" error={touched.oldPassword && !!errors.oldPassword} helperText={touched.oldPassword && errors.oldPassword} />}
                 <Field as={TextField} name="password" label={hasPassword ? 'New password' : 'Create password (optional)'} type="password" error={touched.password && !!errors.password} helperText={touched.password && errors.password} />
                 <Field as={TextField} name="confirmPassword" label="Confirm new password" type="password" error={touched.confirmPassword && !!errors.confirmPassword} helperText={touched.confirmPassword && errors.confirmPassword} />
                 <Divider />
-                <Button disabled={isSubmitting || !values.password || !values.confirmPassword} type="submit" variant="outlined">
+                <Button className="account-outline-button" disabled={isSubmitting || !values.password || !values.confirmPassword} type="submit" variant="outlined">
                   {hasPassword ? 'Update password' : 'Create password'}
                 </Button>
               </Stack>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert, Box, Button, Card, CardContent, CircularProgress, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, Stack, Switch, TextField, Typography,
 } from '@mui/material';
@@ -12,6 +12,11 @@ import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import api from '../../api/axios';
 
 const currentYear = new Date().getFullYear();
+const formatDateTick = (value) => new Date(`${value}T00:00:00.000Z`).toLocaleDateString(undefined, {
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
 
 export default function Dashboard() {
   const [year, setYear] = useState(currentYear);
@@ -24,8 +29,11 @@ export default function Dashboard() {
   const [counts, setCounts] = useState({ products: 0, users: 0 });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const salesRequestId = useRef(0);
 
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
+    const requestId = salesRequestId.current + 1;
+    salesRequestId.current = requestId;
     setLoading(true);
     setError('');
     try {
@@ -37,23 +45,31 @@ export default function Dashboard() {
         api.get('/admin/products'),
         api.get('/admin/users'),
       ]);
+      if (requestId !== salesRequestId.current) return;
+      const hasDateRange = Boolean(startDate || endDate);
+      if (hasDateRange && !salesResponse.data.dateRange) {
+        setSales({ months: [], totalSales: 0, orderCount: 0, dateRange: true });
+        setError('The sales API is returning monthly data. Restart the backend, then apply the date range again.');
+        return;
+      }
       setSales(salesResponse.data);
       setCounts({
         products: productsResponse.data.products?.length || 0,
         users: usersResponse.data.users?.length || 0,
       });
     } catch (requestError) {
+      if (requestId !== salesRequestId.current) return;
       setError(requestError.response?.data?.message || 'Unable to load dashboard');
     } finally {
-      setLoading(false);
+      if (requestId === salesRequestId.current) setLoading(false);
     }
-  };
+  }, [endDate, startDate, year]);
 
   useEffect(() => {
     // The async loader updates state after the request completes.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadDashboard();
-  }, [year, startDate, endDate]);
+  }, [loadDashboard]);
 
   const applyRange = () => {
     if (draftStart && draftEnd && draftStart > draftEnd) {
@@ -74,7 +90,7 @@ export default function Dashboard() {
   const chart = chartType === 'line' ? (
     <LineChart data={sales.months}>
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="month" />
+      <XAxis dataKey={startDate || endDate ? 'date' : 'month'} tickFormatter={startDate || endDate ? formatDateTick : undefined} />
       <YAxis />
       <Tooltip formatter={(value, name) => name === 'sales' ? [`₱${Number(value).toFixed(2)}`, 'Sales'] : [value, 'Orders']} />
       <Legend />
@@ -84,7 +100,7 @@ export default function Dashboard() {
   ) : (
     <BarChart data={sales.months}>
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="month" />
+      <XAxis dataKey={startDate || endDate ? 'date' : 'month'} tickFormatter={startDate || endDate ? formatDateTick : undefined} />
       <YAxis />
       <Tooltip formatter={(value, name) => name === 'sales' ? [`₱${Number(value).toFixed(2)}`, 'Sales'] : [value, 'Orders']} />
       <Legend />
@@ -140,7 +156,7 @@ export default function Dashboard() {
         <Box className="admin-chart-heading">
           <Box>
             <Typography className="admin-section-kicker">PERFORMANCE LOG</Typography>
-            <Typography variant="h5">Sales by month</Typography>
+            <Typography variant="h5">{startDate || endDate ? 'Sales by day' : 'Sales by month'}</Typography>
           </Box>
           <Typography className="admin-chart-badge">{chartType === 'line' ? 'LINE MODE' : 'BAR MODE'}</Typography>
         </Box>

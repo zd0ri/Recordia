@@ -47,7 +47,7 @@ export default function Reviews() {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h3">Reviews</Typography>
+      <Typography className="account-page-title admin-reviews-title" variant="h2">Reviews</Typography>
       {error && <Typography color="error">{error}</Typography>}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
         <Autocomplete

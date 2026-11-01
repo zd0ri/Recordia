@@ -1,34 +1,23 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { cartActions } from '../store';
 import { useAuth } from './AuthContext';
 import { useSnackbar } from './SnackbarContext';
 
 /* eslint-disable react-refresh/only-export-components */
 const CartContext = createContext(null);
 const storageKey = 'recordia_cart';
-const cartReducer = (state, action) => {
-  if (action.type === 'replace') return action.items;
-  if (action.type === 'clear') return [];
-  throw new Error(`Unsupported cart action: ${action.type}`);
-};
-
-const readCart = () => {
-  try {
-    const value = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-};
 
 export function CartProvider({ children }) {
-  const [items, dispatch] = useReducer(cartReducer, undefined, readCart);
+  const dispatch = useDispatch();
+  const items = useSelector((state) => state.cart.items);
   const { user, loading: authLoading } = useAuth();
   const { showError } = useSnackbar();
 
   const persist = useCallback((nextItems) => {
-    dispatch({ type: 'replace', items: nextItems });
+    dispatch(cartActions.replaceItems(nextItems));
     localStorage.setItem(storageKey, JSON.stringify(nextItems));
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (!authLoading && !user && items.length > 0) {
@@ -40,6 +29,10 @@ export function CartProvider({ children }) {
   const addToCart = useCallback((product, quantity = 1) => {
     if (!user) {
       showError('Please log in or register before adding items to your cart.');
+      return false;
+    }
+    if (user.role === 'admin') {
+      showError('Admin accounts cannot add items to the customer cart.');
       return false;
     }
     const existing = items.find((item) => item.product === product._id);
@@ -80,9 +73,9 @@ export function CartProvider({ children }) {
   }, [items, persist]);
 
   const clearCart = useCallback(() => {
-    dispatch({ type: 'clear' });
+    dispatch(cartActions.clearItems());
     localStorage.removeItem(storageKey);
-  }, []);
+  }, [dispatch]);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const itemsPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 

@@ -1,4 +1,7 @@
 const Product = require('../models/product');
+const Review = require('../models/review');
+const Artist = require('../models/artist');
+const Genre = require('../models/genre');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const {
@@ -10,6 +13,41 @@ const {
 const Order = require('../models/order');
 const filterBadWords = require('../utils/filterBadWords');
 const ErrorHandler = require('../utils/ErrorHandler');
+
+const getReviewStats = async (productIds) => {
+    const stats = await Review.aggregate([
+        { $match: { product: { $in: productIds } } },
+        {
+            $group: {
+                _id: '$product',
+                count: { $sum: 1 },
+                rating: { $avg: '$rating' }
+            }
+        }
+    ]);
+
+    return new Map(stats.map((item) => [item._id.toString(), item]));
+};
+
+const syncProductReviewStats = async (productId) => {
+    const [stats] = await Review.aggregate([
+        { $match: { product: productId } },
+        {
+            $group: {
+                _id: '$product',
+                count: { $sum: 1 },
+                rating: { $avg: '$rating' }
+            }
+        }
+    ]);
+    await Product.updateOne(
+        { _id: productId },
+        {
+            ratings: stats?.rating || 0,
+            numOfReviews: stats?.count || 0
+        }
+    );
+};
 
 const parseArrayField = (value) => {
     let parsedValue = value;
@@ -56,6 +94,10 @@ exports.getSingleProduct = catchAsync(async (req, res) => {
         });
     }
 
+    const stats = (await getReviewStats([product._id])).get(product._id.toString());
+    product.ratings = stats?.rating || 0;
+    product.numOfReviews = stats?.count || 0;
+
     res.status(200).json({
         success: true,
         product
@@ -67,27 +109,106 @@ exports.getProducts = catchAsync(async (req, res) => {
     const apiFeatures = new APIFeatures(Product.find(), req.query)
         .search()
         .filter();
-    const filteredProductsCount = await Product.countDocuments(
-        apiFeatures.getFilters()
-    );
+    const filters = apiFeatures.getFilters();
+    const reviewCriteria = {};
+    if (req.query['ratings[gte]'] !== undefined) {
+        reviewCriteria.rating = { $gte: Number(req.query['ratings[gte]']) };
+    }
+    if (req.query['reviews[gte]'] !== undefined) {
+        reviewCriteria.count = { $gte: Number(req.query['reviews[gte]']) };
+    }
+    const reviewPipeline = [];
+    if (req.query.review) {
+        reviewPipeline.push({
+            $match: {
+                comment: {
+                    $regex: req.query.review.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+                    $options: 'i'
+                }
+            }
+        });
+    }
+    if (Object.keys(reviewCriteria).length || req.query.review) {
+        reviewPipeline.push({
+            $group: {
+                _id: '$product',
+                count: { $sum: 1 },
+                rating: { $avg: '$rating' }
+            }
+        });
+        if (Object.keys(reviewCriteria).length) reviewPipeline.push({ $match: reviewCriteria });
+        const matchingReviews = await Review.aggregate(reviewPipeline);
+        filters._id = { $in: matchingReviews.map((review) => review._id) };
+    }
+    const filteredProductsCount = await Product.countDocuments(filters);
 
-    apiFeatures.pagination();
-    const products = await apiFeatures.query
+    const requestedPage = Number(req.query.page) > 0 ? Number(req.query.page) : 1;
+    const requestedLimit = Number(req.query.limit) > 0 ? Number(req.query.limit) : 10;
+    const products = await Product.find(filters)
+        .limit(requestedLimit)
+        .skip(requestedLimit * (requestedPage - 1))
         .populate('artist')
         .populate('genre');
-    const totalPages = Math.ceil(
-        filteredProductsCount / apiFeatures.resPerPage
-    );
+    const reviewStats = await getReviewStats(products.map((product) => product._id));
+    products.forEach((product) => {
+        const stats = reviewStats.get(product._id.toString());
+        product.ratings = stats?.rating || 0;
+        product.numOfReviews = stats?.count || 0;
+    });
+    const totalPages = Math.ceil(filteredProductsCount / requestedLimit);
 
     res.status(200).json({
         success: true,
         products,
         productsCount,
         filteredProductsCount,
-        resPerPage: apiFeatures.resPerPage,
+        resPerPage: requestedLimit,
         totalPages
     });
 
+});
+
+exports.getProductFilterOptions = catchAsync(async (req, res) => {
+    const [artistIds, genreIds, albums, merchTypes, priceRange] = await Promise.all([
+        Product.distinct('artist'),
+        Product.distinct('genre'),
+        Product.distinct('album_title'),
+        Product.distinct('merch_type'),
+        Product.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    min: { $min: '$price' },
+                    max: { $max: '$price' }
+                }
+            }
+        ])
+    ]);
+    const [artists, genres] = await Promise.all([
+        Artist.find({ _id: { $in: artistIds } }).select('name').sort({ name: 1 }),
+        Genre.find({ _id: { $in: genreIds } }).select('name').sort({ name: 1 })
+    ]);
+
+    res.status(200).json({
+        success: true,
+        artists,
+        genres,
+        albums: albums.filter(Boolean).sort((a, b) => a.localeCompare(b)),
+        merchTypes: merchTypes.filter(Boolean).sort(),
+        priceRange: priceRange[0]
+            ? [priceRange[0].min, priceRange[0].max]
+            : [0, 0]
+    });
+});
+
+exports.getFeaturedReviews = catchAsync(async (req, res) => {
+    const reviews = await Review.find()
+        .sort({ createdAt: -1 })
+        .limit(3)
+        .populate('product', 'album_title')
+        .populate('user', 'name');
+
+    res.status(200).json({ success: true, reviews });
 });
 
 exports.getProductSuggestions = catchAsync(async (req, res) => {
@@ -123,6 +244,7 @@ exports.updateProduct = catchAsync(async (req, res) => {
         });
     }
 
+    const previousImages = product.images;
     const imageSources = getImageSources(req);
     let productData = { ...req.body };
     const hasImageSelection = req.body.existingImageIds !== undefined;
@@ -144,19 +266,13 @@ exports.updateProduct = catchAsync(async (req, res) => {
         delete productData.images;
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-        req.params.id,
-        productData,
-        {
-            new: true,
-            runValidators: true
-        }
-    );
+    product.set(productData);
+    const updatedProduct = await product.save();
 
     if (hasImageSelection || imageSources.length > 0) {
         const retainedImages = productData.images || product.images;
         await deleteProductImages(
-            product.images.filter((image) =>
+            previousImages.filter((image) =>
                 !retainedImages.some((retainedImage) =>
                     retainedImage.public_id === image.public_id
                 )
@@ -181,6 +297,7 @@ exports.deleteProduct = catchAsync(async (req, res) => {
     }
 
     await deleteProductImages(product.images);
+    await Review.deleteMany({ product: product._id });
     await product.deleteOne();
 
     res.status(200).json({
@@ -213,6 +330,7 @@ exports.bulkDeleteProducts = catchAsync(async (req, res) => {
     await deleteProductImages(
         products.flatMap((product) => product.images)
     );
+    await Review.deleteMany({ product: { $in: ids } });
     await Product.deleteMany({
         _id: { $in: ids }
     });
@@ -250,6 +368,12 @@ exports.getAdminProducts = catchAsync(async (req, res) => {
     const products = await Product.find()
         .populate('artist')
         .populate('genre');
+    const reviewStats = await getReviewStats(products.map((product) => product._id));
+    products.forEach((product) => {
+        const stats = reviewStats.get(product._id.toString());
+        product.ratings = stats?.rating || 0;
+        product.numOfReviews = stats?.count || 0;
+    });
 
     res.status(200).json({
         success: true,
@@ -258,13 +382,14 @@ exports.getAdminProducts = catchAsync(async (req, res) => {
 });
 
 exports.createProductReview = catchAsync(async (req, res) => {
-    const { rating, comment, productId } = req.body;
+    const { rating, comment, productId, orderId } = req.body;
     const numericRating = Number(rating);
-    if (!productId || !Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
-        return res.status(400).json({ success: false, message: 'Product and rating from 1 to 5 are required' });
+    if (!productId || !orderId || !Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
+        return res.status(400).json({ success: false, message: 'Product, order, and rating from 1 to 5 are required' });
     }
 
     const eligibleOrder = await Order.exists({
+        _id: orderId,
         user: req.user._id,
         orderStatus: 'Completed',
         'orderItems.product': productId
@@ -285,35 +410,22 @@ exports.createProductReview = catchAsync(async (req, res) => {
         return res.status(400).json({ success: false, message: 'Review comment is required' });
     }
 
-    const review = {
-        user: req.user._id,
+    const update = {
         name: req.user.name,
         rating: numericRating,
         comment: filterBadWords(comment)
     };
-    const existingReview = product.reviews.find(
-        (existingReview) =>
-            existingReview.user.toString() === req.user._id.toString()
+    if (req.file) update.image = await uploadReviewImage(req.file);
+
+    await Review.findOneAndUpdate(
+        { order: orderId, product: product._id },
+        {
+            $set: { ...update, user: req.user._id },
+            $setOnInsert: { order: orderId, product: product._id }
+        },
+        { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
     );
-
-    if (existingReview) {
-        existingReview.comment = review.comment;
-        existingReview.rating = review.rating;
-        if (req.file) {
-            existingReview.image = await uploadReviewImage(req.file);
-        }
-    } else {
-        if (req.file) {
-            review.image = await uploadReviewImage(req.file);
-        }
-        product.reviews.push(review);
-    }
-
-    product.numOfReviews = product.reviews.length;
-    product.ratings = product.numOfReviews
-        ? product.reviews.reduce((sum, item) => sum + item.rating, 0) / product.numOfReviews
-        : 0;
-    await product.save({ validateBeforeSave: false });
+    await syncProductReviewStats(product._id);
 
     res.status(200).json({
         success: true
@@ -321,98 +433,88 @@ exports.createProductReview = catchAsync(async (req, res) => {
 });
 
 exports.getProductReviews = catchAsync(async (req, res) => {
-    const product = await Product.findById(req.query.productId || req.query.id);
+    const productId = req.query.productId || req.query.id;
+    const product = await Product.findById(productId);
     if (!product) {
         return res.status(404).json({ success: false, message: 'Product not found' });
     }
+    const reviews = await Review.find({ product: product._id })
+        .sort({ createdAt: -1 })
+        .populate('user', 'name');
 
     res.status(200).json({
         success: true,
-        reviews: product.reviews
+        reviews
     });
 });
 
 exports.canReview = catchAsync(async (req, res) => {
     const productId = req.query.productId;
-    const canReview = Boolean(await Order.exists({
+    const orderId = req.query.orderId;
+    const eligibleOrder = orderId ? await Order.exists({
+        _id: orderId,
         user: req.user._id,
         orderStatus: 'Completed',
         'orderItems.product': productId
-    }));
+    }) : null;
+    const existingReview = eligibleOrder
+        ? await Review.exists({ order: orderId, product: productId })
+        : null;
 
-    res.status(200).json({ success: true, canReview });
+    res.status(200).json({
+        success: true,
+        canReview: Boolean(eligibleOrder),
+        hasReview: Boolean(existingReview)
+    });
 });
 
 exports.deleteOwnReview = catchAsync(async (req, res) => {
-    const product = await Product.findById(req.query.productId);
+    const { productId, orderId } = req.query;
+    const product = await Product.findById(productId);
     if (!product) {
         return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    const reviews = product.reviews.filter(
-        (review) => review.user.toString() !== req.user._id.toString()
-    );
-    if (reviews.length === product.reviews.length) {
+    const review = await Review.findOneAndDelete({
+        product: product._id,
+        order: orderId,
+        user: req.user._id
+    });
+    if (!review) {
         return res.status(404).json({ success: false, message: 'Your review was not found' });
     }
 
-    product.reviews = reviews;
-    product.numOfReviews = reviews.length;
-    product.ratings = reviews.length
-        ? reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length
-        : 0;
-    await product.save({ validateBeforeSave: false });
+    await syncProductReviewStats(product._id);
     res.status(200).json({ success: true });
 });
 
 exports.deleteReview = catchAsync(async (req, res) => {
-    const product = await Product.findById(req.query.productId);
-    if (!product) {
-        return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-    const reviews = product.reviews.filter(
-        (review) => review._id.toString() !== req.query.id.toString()
-    );
-    const ratings = reviews.length
-        ? reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length
-        : 0;
-
-    await Product.findByIdAndUpdate(
-        req.query.productId,
-        {
-            reviews,
-            ratings,
-            numOfReviews: reviews.length
-        },
-        {
-            new: true,
-            runValidators: true
-        }
-    );
-
-    res.status(200).json({
-        success: true
+    const review = await Review.findOneAndDelete({
+        _id: req.query.id,
+        product: req.query.productId
     });
+    if (!review) {
+        return res.status(404).json({ success: false, message: 'Review not found' });
+    }
+
+    await syncProductReviewStats(review.product);
+    res.status(200).json({ success: true });
 });
 
 exports.getAllReviews = catchAsync(async (req, res) => {
-    const products = await Product.find(
-        { 'reviews.0': { $exists: true } },
-        { album_title: 1, reviews: 1 }
-    ).populate('reviews.user', 'name email');
+    const reviews = await Review.find()
+        .sort({ createdAt: -1 })
+        .populate('product', 'album_title')
+        .populate('user', 'name email');
 
     const search = typeof req.query.search === 'string' ? req.query.search.trim().toLowerCase() : '';
-    const minRating = Number(req.query.minRating);
-    const maxRating = Number(req.query.maxRating);
-    const reviews = products.flatMap((product) => product.reviews.map((review) => ({
-        _id: review._id,
-        product: { _id: product._id, album_title: product.album_title },
-        user: review.user,
-        name: review.name,
-        rating: review.rating,
-        comment: review.comment,
-        image: review.image
-    }))).filter((review) => (
+    const minRating = req.query.minRating === undefined || req.query.minRating === ''
+        ? null
+        : Number(req.query.minRating);
+    const maxRating = req.query.maxRating === undefined || req.query.maxRating === ''
+        ? null
+        : Number(req.query.maxRating);
+    const filteredReviews = reviews.filter((review) => (
         (!search
             || String(review.comment || '').toLowerCase().includes(search)
             || String(review.product?.album_title || '').toLowerCase().includes(search)
@@ -422,5 +524,5 @@ exports.getAllReviews = catchAsync(async (req, res) => {
         && (!Number.isInteger(maxRating) || review.rating <= maxRating)
     ));
 
-    res.status(200).json({ success: true, reviews });
+    res.status(200).json({ success: true, reviews: filteredReviews });
 });

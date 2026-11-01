@@ -27,6 +27,8 @@ import Dashboard from './pages/admin/Dashboard';
 import CollectionLanding from './pages/CollectionLanding';
 import TaxonomyLanding from './pages/TaxonomyLanding';
 import About from './pages/About';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function NotFound() {
   return (
@@ -62,10 +64,14 @@ export default function App() {
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/password/forgot" element={<ForgotPassword />} />
+          <Route path="/password/reset/:token" element={<ResetPassword />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<Profile />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
+            <Route element={<ProtectedRoute customerOnly />}>
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+            </Route>
             <Route path="/order-success/:id" element={<OrderSuccess />} />
             <Route path="/orders" element={<MyOrders />} />
             <Route path="/orders/:id" element={<OrderDetails />} />

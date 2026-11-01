@@ -9,12 +9,16 @@ const productSchema = new mongoose.Schema({
     artist: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Artist',
-        required: [true, 'Please select an artist']
+        required: [function () {
+            return this.merch_type === 'Vinyl';
+        }, 'Please select an artist']
     },
     genre: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Genre',
-        required: [true, 'Please select a genre']
+        required: [function () {
+            return this.merch_type === 'Vinyl';
+        }, 'Please select a genre']
     },
     merch_type: {
         type: String,
@@ -22,9 +26,9 @@ const productSchema = new mongoose.Schema({
             'Vinyl',
             'T-Shirt',
             'Poster',
-            'Tote Bag',
-            'Accessory',
-            'Other'
+            'Pin',
+            'Keychain',
+            'Accessory'
         ],
         required: [true, 'Please select merchandise type']
     },
@@ -52,37 +56,6 @@ const productSchema = new mongoose.Schema({
             url: {
                 type: String,
                 required: true
-            }
-        }
-    ],
-    reviews: [
-        {
-            user: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User',
-                required: true
-            },
-            name: {
-                type: String,
-                required: true
-            },
-            rating: {
-                type: Number,
-                required: true,
-                min: 1,
-                max: 5
-            },
-            comment: {
-                type: String,
-                required: true
-            },
-            image: {
-                public_id: String,
-                url: String
-            },
-            createdAt: {
-                type: Date,
-                default: Date.now
             }
         }
     ],

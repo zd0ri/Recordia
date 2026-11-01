@@ -1,5 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/axios';
+import { authActions } from '../store';
 import { useSnackbar } from './SnackbarContext';
 
 /* eslint-disable react-refresh/only-export-components */
@@ -16,80 +18,75 @@ function getAuthErrorMessage(error, fallback) {
 
 export function AuthProvider({ children }) {
   const { showSuccess, showError } = useSnackbar();
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('recordia_token'));
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { user, token, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const loadUser = async () => {
       if (!token) {
-        setLoading(false);
+        dispatch(authActions.setLoading(false));
         return;
       }
 
       try {
         const { data } = await api.get('/me');
-        setUser(data.user);
+        dispatch(authActions.setUser(data.user));
       } catch {
         localStorage.removeItem('recordia_token');
-        setToken(null);
-        setUser(null);
+        dispatch(authActions.clearAuth());
       } finally {
-        setLoading(false);
+        dispatch(authActions.setLoading(false));
       }
     };
 
     loadUser();
-  }, [token]);
+  }, [dispatch, token]);
 
   const login = useCallback(async (email, password) => {
     try {
       const { data } = await api.post('/login', { email, password });
       localStorage.setItem('recordia_token', data.token);
-      setToken(data.token);
-      setUser(data.user);
+      dispatch(authActions.setCredentials({ token: data.token, user: data.user }));
       showSuccess('Welcome back.');
       return data;
     } catch (error) {
       showError(getAuthErrorMessage(error, 'Login failed.'));
       throw error;
     }
-  }, [showError, showSuccess]);
+  }, [dispatch, showError, showSuccess]);
 
   const firebaseLogin = useCallback(async (idToken) => {
     try {
       const { data } = await api.post('/firebase-login', { idToken });
       localStorage.setItem('recordia_token', data.token);
-      setToken(data.token);
-      setUser(data.user);
+      dispatch(authActions.setCredentials({ token: data.token, user: data.user }));
       showSuccess('Welcome to Recordia.');
       return data;
     } catch (error) {
       showError(getAuthErrorMessage(error, 'Authentication failed.'));
       throw error;
     }
-  }, [showError, showSuccess]);
+  }, [dispatch, showError, showSuccess]);
 
   const register = useCallback(async (formData) => {
     try {
       const { data } = await api.post('/register', formData);
       localStorage.setItem('recordia_token', data.token);
-      setToken(data.token);
-      setUser(data.user);
+      dispatch(authActions.setCredentials({ token: data.token, user: data.user }));
       showSuccess('Account created successfully.');
       return data;
     } catch (error) {
       showError(getAuthErrorMessage(error, 'Registration failed.'));
       throw error;
     }
-  }, [showError, showSuccess]);
+  }, [dispatch, showError, showSuccess]);
 
   const updateProfile = useCallback(async (formData) => {
     const { data } = await api.put('/me/update', formData);
-    setUser(data.user);
+    dispatch(authActions.setUser(data.user));
     showSuccess('Profile updated.');
     return data;
-  }, [showSuccess]);
+  }, [dispatch, showSuccess]);
 
   const changePassword = useCallback(async (oldPassword, password, confirmPassword) => {
     const { data } = await api.put('/password/update', {
@@ -98,17 +95,15 @@ export function AuthProvider({ children }) {
       confirmPassword,
     });
     localStorage.setItem('recordia_token', data.token);
-    setToken(data.token);
-    setUser(data.user);
+    dispatch(authActions.setCredentials({ token: data.token, user: data.user }));
     showSuccess('Password updated.');
     return data;
-  }, [showSuccess]);
+  }, [dispatch, showSuccess]);
 
   const logout = useCallback(() => {
     localStorage.removeItem('recordia_token');
-    setToken(null);
-    setUser(null);
-  }, []);
+    dispatch(authActions.clearAuth());
+  }, [dispatch]);
 
   const value = useMemo(
     () => ({

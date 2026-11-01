@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AppBar, Box, Button, FormControl, IconButton, InputBase, MenuItem, Popover, Select, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Alert, AppBar, Box, Button, FormControl, IconButton, InputBase, MenuItem, Popover, Select, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
@@ -19,21 +19,21 @@ export default function Navbar() {
   const [search, setSearch] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [filterAnchor, setFilterAnchor] = useState(null);
-  const [options, setOptions] = useState({ artists: [], genres: [] });
+  const [options, setOptions] = useState({ artists: [], genres: [], albums: [], merchTypes: [] });
+  const [filterError, setFilterError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      api.get('/artists'),
-      api.get('/genres'),
-    ]).then(([artistsResponse, genresResponse]) => {
+    api.get('/products/filter-options').then(({ data }) => {
       if (cancelled) return;
       setOptions({
-        artists: artistsResponse.data.artists || [],
-        genres: genresResponse.data.genres || [],
+        artists: data.artists || [],
+        genres: data.genres || [],
+        albums: data.albums || [],
+        merchTypes: data.merchTypes || [],
       });
-    }).catch(() => {
-      if (!cancelled) setSuggestions([]);
+    }).catch((requestError) => {
+      if (!cancelled) setFilterError(requestError.response?.data?.message || 'Unable to load filter options');
     });
     return () => { cancelled = true; };
   }, []);
@@ -86,7 +86,6 @@ export default function Navbar() {
     event.preventDefault();
     const params = new URLSearchParams();
     if (search.trim()) params.set('keyword', search.trim());
-    params.set('page', '1');
     navigate(`/?${params.toString()}`);
     setSearchOpen(true);
   };
@@ -113,7 +112,7 @@ export default function Navbar() {
     const params = new URLSearchParams(window.location.search);
     if (value) params.set(name, value);
     else params.delete(name);
-    params.set('page', '1');
+    params.delete('page');
     navigate(`/?${params.toString()}`);
   };
 
@@ -128,7 +127,6 @@ export default function Navbar() {
         </Button>
         <Stack className="recordia-nav-links" direction="row" alignItems="center" flexWrap="wrap" justifyContent="flex-end" spacing={{ xs: 0, sm: 1 }} sx={{ flex: 1, minWidth: 0 }}>
           <Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/">Home</Button>
-          <Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/collections/new-arrivals" sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>New arrivals</Button>
           <Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/collections/accessories" sx={{ display: { xs: 'none', md: 'inline-flex' } }}>Merch</Button>
           <Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/genres" sx={{ display: { xs: 'none', lg: 'inline-flex' } }}>Genres</Button>
           <Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/artists" sx={{ display: { xs: 'none', lg: 'inline-flex' } }}>Artists</Button>
@@ -159,6 +157,7 @@ export default function Navbar() {
               Control room
             </Button>
           )}
+          {user?.role === 'user' && <Button className="recordia-nav-link" color="inherit" component={RouterLink} to="/orders">Purchase history</Button>}
           {user?.role !== 'admin' && <Tooltip title={user ? 'Your profile' : 'Log in'}>
             <IconButton className="recordia-icon-link" color="inherit" component={RouterLink} to={user ? '/profile' : '/login'} aria-label={user ? 'Your profile' : 'Log in'}>
               <PersonOutlineIcon />
@@ -183,12 +182,13 @@ export default function Navbar() {
       >
         <Stack className="navbar-filters" spacing={1.5}>
           <Typography className="eyebrow">REFINE THE CRATE</Typography>
+          {filterError && <Alert severity="error">{filterError}</Alert>}
           <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('genre') || ''} onChange={(event) => updateFilter('genre', event.target.value)}><MenuItem value="">All genres</MenuItem>{options.genres.map((genre) => <MenuItem key={genre._id} value={genre._id}>{genre.name}</MenuItem>)}</Select></FormControl>
           <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('artist') || ''} onChange={(event) => updateFilter('artist', event.target.value)}><MenuItem value="">All artists</MenuItem>{options.artists.map((artist) => <MenuItem key={artist._id} value={artist._id}>{artist.name}</MenuItem>)}</Select></FormControl>
-          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('ratings[gte]') || ''} onChange={(event) => updateFilter('ratings[gte]', event.target.value)}><MenuItem value="">Any rating</MenuItem>{[4, 3, 2, 1].map((rating) => <MenuItem key={rating} value={rating}>{rating}+ stars</MenuItem>)}</Select></FormControl>
+          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('album') || ''} onChange={(event) => updateFilter('album', event.target.value)}><MenuItem value="">All albums</MenuItem>{options.albums.map((album) => <MenuItem key={album} value={album}>{album}</MenuItem>)}</Select></FormControl>
+          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('merch_type') || ''} onChange={(event) => updateFilter('merch_type', event.target.value)}><MenuItem value="">All formats</MenuItem>{options.merchTypes.map((merchType) => <MenuItem key={merchType} value={merchType}>{merchType}</MenuItem>)}</Select></FormControl>
           <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('reviews[gte]') || ''} onChange={(event) => updateFilter('reviews[gte]', event.target.value)}><MenuItem value="">Any reviews</MenuItem>{[1, 5, 10, 25].map((count) => <MenuItem key={count} value={count}>{count}+ reviews</MenuItem>)}</Select></FormControl>
-          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('price[lte]') || ''} onChange={(event) => updateFilter('price[lte]', event.target.value)}><MenuItem value="">Any price</MenuItem>{[25, 50, 100, 250, 500].map((price) => <MenuItem key={price} value={price}>Under ₱{price}</MenuItem>)}</Select></FormControl>
-          <Button onClick={() => { navigate('/?page=1'); setFilterAnchor(null); }}>Clear filters</Button>
+          <Button onClick={() => { navigate('/'); setFilterAnchor(null); }}>Clear filters</Button>
         </Stack>
       </Popover>
     </AppBar>
