@@ -1,6 +1,3 @@
-const { Filter } = require('bad-words');
-
-const filter = new Filter();
 const customWords = [
     'gagi', 'gago', 'gaga', 'tangina', 'putangina', 'puta', 'pucha',
     'pakshet', 'punyeta', 'kupal', 'ulol', 'bobo', 'tanga', 'tarantado',
@@ -36,13 +33,26 @@ const phrasePatterns = customPhrases.map((phrase) => new RegExp(
     'gi'
 ));
 
-filter.addWords(...customWords);
-
 module.exports = (comment) => {
     let cleaned = String(comment || '');
+
+    // Filter custom phrases
     phrasePatterns.forEach((pattern) => {
-        cleaned = cleaned.replace(pattern, (match) => match.replace(/[a-z0-9]/gi, '*'));
+        cleaned = cleaned.replace(
+            pattern,
+            (match) => match.replace(/[a-z0-9]/gi, '*')
+        );
     });
 
-    return filter.clean(cleaned).replace(/\*+/g, '***');
+    // Filter individual bad words
+    customWords.forEach((word) => {
+        const pattern = new RegExp(
+            `\\b${escapeRegex(word)}\\b`,
+            'gi'
+        );
+
+        cleaned = cleaned.replace(pattern, (match) => '*'.repeat(match.length));
+    });
+
+    return cleaned.replace(/\*+/g, '***');
 };
