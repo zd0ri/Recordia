@@ -86,8 +86,8 @@ const generateReceipt = (order) => new Promise((resolve, reject) => {
     document.fillColor(colors.ink).font('Courier').fontSize(9)
         .text('Items total', summaryX + 16, y + 18)
         .text(money(order.itemsPrice), summaryX + 115, y + 18, { width: 102, align: 'right' })
-        .text('Tax', summaryX + 16, y + 40)
-        .text(money(order.taxPrice), summaryX + 115, y + 40, { width: 102, align: 'right' })
+        .text('Discount', summaryX + 16, y + 40)
+        .text(`-${money(order.discountPrice)}`, summaryX + 115, y + 40, { width: 102, align: 'right' })
         .text('Shipping', summaryX + 16, y + 62)
         .text(money(order.shippingPrice), summaryX + 115, y + 62, { width: 102, align: 'right' });
     document.moveTo(summaryX + 16, y + 84).lineTo(summaryX + 219, y + 84)

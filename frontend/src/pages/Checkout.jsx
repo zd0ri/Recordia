@@ -27,7 +27,9 @@ export default function Checkout() {
     ? items.filter((item) => selectedIds.includes(item.product))
     : items;
   const itemsPrice = checkoutItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = Number((itemsPrice * 0.12).toFixed(2));
+  const discountRates = { '20SBESTHIT': 0.20, ELV15: 0.05, '2NDNATVR3': 0.10 };
+  const discountCode = String(location.state?.discountCode || '').toUpperCase();
+  const discount = Number((itemsPrice * (discountRates[discountCode] || 0)).toFixed(2));
 
   if (!checkoutItems.length) return <Alert severity="info">Choose at least one record before checkout.</Alert>;
 
@@ -49,6 +51,7 @@ export default function Checkout() {
                 phoneNo: values.phoneNo,
               },
               paymentInfo: { method: values.method },
+              discountCode,
             });
             removeItems(checkoutItems.map((item) => item.product));
             navigate(`/order-success/${data.order._id}`, {
@@ -95,8 +98,8 @@ export default function Checkout() {
               <Divider />
               <Box className="retro-checkout-totals">
                 <Typography><span>Items</span><strong>₱{itemsPrice.toFixed(2)}</strong></Typography>
-                <Typography><span>Tax</span><strong>₱{tax.toFixed(2)}</strong></Typography>
-                <Typography className="retro-checkout-total"><span>Total</span><strong>₱{(itemsPrice + tax).toFixed(2)}</strong></Typography>
+                {discount > 0 && <Typography><span>Discount ({discountCode})</span><strong>-₱{discount.toFixed(2)}</strong></Typography>}
+                <Typography className="retro-checkout-total"><span>Total</span><strong>₱{(itemsPrice - discount).toFixed(2)}</strong></Typography>
               </Box>
               <Typography className="retro-checkout-note">Your order will be checked, packed, and sent with care.</Typography>
             </Box>

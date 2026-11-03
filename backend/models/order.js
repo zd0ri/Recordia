@@ -73,6 +73,15 @@ const orderSchema = mongoose.Schema({
         required: true,
         default: 0
     },
+    discountCode: {
+        type: String,
+        default: ''
+    },
+    discountPrice: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     taxPrice: {
         type: Number,
         required: true,

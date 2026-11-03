@@ -2878,6 +2878,28 @@ footer {
   background: #fff8e8;
 }
 
+.retro-cart-quantity-stepper {
+  width: 102px;
+  min-height: 40px;
+  justify-content: space-between;
+  border: 2px solid #542d2d;
+  background: #fff8e8;
+  color: #542d2d;
+}
+
+.retro-cart-quantity-stepper .MuiIconButton-root {
+  border-radius: 0;
+  color: inherit;
+}
+
+.retro-cart-quantity-stepper .MuiTypography-root {
+  min-width: 24px;
+  color: inherit;
+  font-family: 'DM Mono', monospace;
+  font-size: .75rem;
+  text-align: center;
+}
+
 .retro-quantity .MuiSelect-select,
 .retro-quantity .MuiSelect-icon {
   color: #542d2d;

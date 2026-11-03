@@ -49,7 +49,7 @@ export default function OrderSuccess() {
           <Divider />
           <Stack className="retro-receipt-totals" spacing={.8}>
             <Typography><span>Items</span><strong>₱{Number(order.itemsPrice).toFixed(2)}</strong></Typography>
-            <Typography><span>Tax</span><strong>₱{Number(order.taxPrice).toFixed(2)}</strong></Typography>
+            {Number(order.discountPrice) > 0 && <Typography><span>Discount{order.discountCode ? ` (${order.discountCode})` : ''}</span><strong>-₱{Number(order.discountPrice).toFixed(2)}</strong></Typography>}
             <Typography className="grand-total"><span>Total paid</span><strong>₱{Number(order.totalPrice).toFixed(2)}</strong></Typography>
           </Stack>
           <Box className="retro-receipt-delivery">

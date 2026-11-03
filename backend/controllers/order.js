@@ -4,12 +4,13 @@ const catchAsync = require('../utils/catchAsync')
 const sendEmail = require('../utils/sendEmail');
 const generateReceipt = require('../utils/generateReceipt');
 const createOrderEmail = require('../utils/orderEmail');
+const { getDiscountRate } = require('../utils/discountCodes');
 
 
 
 // Create a new order   =>  /api/v1/order/new
 exports.newOrder = catchAsync(async (req, res, next) => {
-    const { orderItems, shippingInfo, paymentInfo } = req.body;
+    const { orderItems, shippingInfo, paymentInfo, discountCode } = req.body;
 
     if (!Array.isArray(orderItems) || orderItems.length === 0) {
         return res.status(400).json({
@@ -75,14 +76,25 @@ exports.newOrder = catchAsync(async (req, res, next) => {
         (sum, item) => sum + item.price * item.quantity,
         0
     );
-    const taxPrice = Number((itemsPrice * 0.12).toFixed(2));
+    const normalizedDiscountCode = String(discountCode || '').trim().toUpperCase();
+    const discountRate = getDiscountRate(normalizedDiscountCode);
+    if (normalizedDiscountCode && !discountRate) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid discount code'
+        });
+    }
+    const discountPrice = Number((itemsPrice * discountRate).toFixed(2));
+    const taxPrice = 0;
     const shippingPrice = 0;
-    const totalPrice = Number((itemsPrice + taxPrice + shippingPrice).toFixed(2));
+    const totalPrice = Number((itemsPrice - discountPrice + shippingPrice).toFixed(2));
 
     const order = await Order.create({
         orderItems: normalizedItems,
         shippingInfo,
         itemsPrice,
+        discountCode: normalizedDiscountCode,
+        discountPrice,
         taxPrice,
         shippingPrice,
         totalPrice,
