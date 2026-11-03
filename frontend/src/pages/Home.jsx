@@ -247,11 +247,6 @@ export default function Home() {
             : !reviewError && <Grid size={12}><Typography color="text.secondary">Collector reviews will appear here after customers share their experience.</Typography></Grid>}
         </Grid>
       </Box>
-      <Box className="drops-band">
-        <Box><Typography className="eyebrow">LIMITED PRESSINGS</Typography><Typography variant="h2">Limited drops.<br />Don’t miss out.</Typography></Box>
-        <Box className="drop-count"><strong>03</strong><small>DAYS</small><strong>14</strong><small>HRS</small><strong>27</strong><small>MINS</small><strong>52</strong><small>SECS</small></Box>
-        <Button component="a" href="#collection">Explore drops</Button>
-      </Box>
       <Box className="section-heading" id="collection">
         <Box><Typography className="eyebrow">THE RECORD ROOM</Typography><Typography variant="h2">Browse the collection</Typography></Box>
         <Typography className="section-note">Handpicked for curious ears.</Typography>
