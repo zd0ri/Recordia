@@ -19,24 +19,29 @@ export default function Navbar() {
   const [search, setSearch] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [filterAnchor, setFilterAnchor] = useState(null);
-  const [options, setOptions] = useState({ artists: [], genres: [], albums: [], merchTypes: [] });
+  const [options, setOptions] = useState({ artists: [], genres: [], merchTypes: [] });
   const [filterError, setFilterError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
-    api.get('/products/filter-options').then(({ data }) => {
+    const currentParams = new URLSearchParams(location.search);
+    const params = {};
+    ['genre', 'artist', 'merch_type'].forEach((key) => {
+      const value = currentParams.get(key);
+      if (value) params[key] = value;
+    });
+    api.get('/products/filter-options', { params }).then(({ data }) => {
       if (cancelled) return;
       setOptions({
         artists: data.artists || [],
         genres: data.genres || [],
-        albums: data.albums || [],
         merchTypes: data.merchTypes || [],
       });
     }).catch((requestError) => {
       if (!cancelled) setFilterError(requestError.response?.data?.message || 'Unable to load filter options');
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [location.search]);
 
   useEffect(() => {
     const query = search.trim();
@@ -44,8 +49,14 @@ export default function Navbar() {
       return undefined;
     }
     let cancelled = false;
+    const currentParams = new URLSearchParams(location.search);
+    const params = { keyword: query };
+    ['genre', 'artist', 'merch_type'].forEach((key) => {
+      const value = currentParams.get(key);
+      if (value) params[key] = value;
+    });
     const timer = setTimeout(() => {
-      api.get('/products/suggestions', { params: { keyword: query } })
+      api.get('/products/suggestions', { params })
         .then(({ data }) => {
           if (!cancelled) setSuggestions(data.products || []);
         })
@@ -57,7 +68,7 @@ export default function Navbar() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [search]);
+  }, [location.search, search]);
 
   const matches = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -79,28 +90,34 @@ export default function Navbar() {
       ...artist,
       suggestionType: 'artist',
     }));
-    return [...productMatches, ...genreMatches, ...artistMatches].slice(0, 8);
+    return [...genreMatches, ...artistMatches, ...productMatches].slice(0, 8);
   }, [options.artists, options.genres, search, suggestions]);
 
   const submitSearch = (event) => {
     event.preventDefault();
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(location.search);
+    params.delete('album');
     if (search.trim()) params.set('keyword', search.trim());
+    else params.delete('keyword');
     navigate(`/?${params.toString()}`);
     setSearchOpen(true);
   };
 
   const chooseSuggestion = (product) => {
+    const params = new URLSearchParams(location.search);
+    params.delete('keyword');
     if (product.suggestionType === 'genre') {
       setSearch(product.name);
       setSearchOpen(false);
-      navigate(`/genres?keyword=${encodeURIComponent(product.name)}`);
+      params.set('genre', product._id);
+      navigate(`/?${params.toString()}`);
       return;
     }
     if (product.suggestionType === 'artist') {
       setSearch(product.name);
       setSearchOpen(false);
-      navigate(`/artists?keyword=${encodeURIComponent(product.name)}`);
+      params.set('artist', product._id);
+      navigate(`/?${params.toString()}`);
       return;
     }
     setSearch(product.album_title || product.name || '');
@@ -109,7 +126,7 @@ export default function Navbar() {
   };
 
   const updateFilter = (name, value) => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     if (value) params.set(name, value);
     else params.delete(name);
     params.delete('page');
@@ -183,11 +200,10 @@ export default function Navbar() {
         <Stack className="navbar-filters" spacing={1.5}>
           <Typography className="eyebrow">REFINE THE CRATE</Typography>
           {filterError && <Alert severity="error">{filterError}</Alert>}
-          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('genre') || ''} onChange={(event) => updateFilter('genre', event.target.value)}><MenuItem value="">All genres</MenuItem>{options.genres.map((genre) => <MenuItem key={genre._id} value={genre._id}>{genre.name}</MenuItem>)}</Select></FormControl>
-          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('artist') || ''} onChange={(event) => updateFilter('artist', event.target.value)}><MenuItem value="">All artists</MenuItem>{options.artists.map((artist) => <MenuItem key={artist._id} value={artist._id}>{artist.name}</MenuItem>)}</Select></FormControl>
-          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('album') || ''} onChange={(event) => updateFilter('album', event.target.value)}><MenuItem value="">All albums</MenuItem>{options.albums.map((album) => <MenuItem key={album} value={album}>{album}</MenuItem>)}</Select></FormControl>
-          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('merch_type') || ''} onChange={(event) => updateFilter('merch_type', event.target.value)}><MenuItem value="">All formats</MenuItem>{options.merchTypes.map((merchType) => <MenuItem key={merchType} value={merchType}>{merchType}</MenuItem>)}</Select></FormControl>
-          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(window.location.search).get('reviews[gte]') || ''} onChange={(event) => updateFilter('reviews[gte]', event.target.value)}><MenuItem value="">Any reviews</MenuItem>{[1, 5, 10, 25].map((count) => <MenuItem key={count} value={count}>{count}+ reviews</MenuItem>)}</Select></FormControl>
+          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(location.search).get('genre') || ''} onChange={(event) => updateFilter('genre', event.target.value)}><MenuItem value="">All genres</MenuItem>{options.genres.map((genre) => <MenuItem key={genre._id} value={genre._id}>{genre.name}</MenuItem>)}</Select></FormControl>
+          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(location.search).get('artist') || ''} onChange={(event) => updateFilter('artist', event.target.value)}><MenuItem value="">All artists</MenuItem>{options.artists.map((artist) => <MenuItem key={artist._id} value={artist._id}>{artist.name}</MenuItem>)}</Select></FormControl>
+          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(location.search).get('merch_type') || ''} onChange={(event) => updateFilter('merch_type', event.target.value)}><MenuItem value="">All formats</MenuItem>{options.merchTypes.map((merchType) => <MenuItem key={merchType} value={merchType}>{merchType}</MenuItem>)}</Select></FormControl>
+          <FormControl size="small"><Select displayEmpty value={new URLSearchParams(location.search).get('reviews[gte]') || ''} onChange={(event) => updateFilter('reviews[gte]', event.target.value)}><MenuItem value="">Any reviews</MenuItem>{[1, 5, 10, 25].map((count) => <MenuItem key={count} value={count}>{count}+ reviews</MenuItem>)}</Select></FormControl>
           <Button onClick={() => { navigate('/'); setFilterAnchor(null); }}>Clear filters</Button>
         </Stack>
       </Popover>

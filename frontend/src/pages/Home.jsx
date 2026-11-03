@@ -43,7 +43,6 @@ export default function Home() {
     filters.keyword,
     filters.genre,
     filters.artist,
-    searchParams.get('album') || '',
     searchParams.get('merch_type') || '',
     filters.rating,
     filters.reviewCount,
@@ -65,7 +64,6 @@ export default function Home() {
           ...(filters.keyword && { keyword: filters.keyword }),
           ...(filters.genre && { genre: filters.genre }),
           ...(filters.artist && { artist: filters.artist }),
-          ...(searchParams.get('album') && { album: searchParams.get('album') }),
           ...(searchParams.get('merch_type') && { merch_type: searchParams.get('merch_type') }),
           ...(filters.rating && { 'ratings[eq]': filters.rating }),
           ...(filters.reviewCount && { 'reviews[gte]': filters.reviewCount }),
@@ -194,7 +192,7 @@ export default function Home() {
         <Button component={RouterLink} to="/genres" className="band-link">View all genres →</Button>
         <Box className="genre-tiles">
           {genreTiles.map((genre, index) => (
-            <Button key={genre._id} className="genre-tile" component={RouterLink} to={`/genres?keyword=${encodeURIComponent(genre.name)}`}>
+            <Button key={genre._id} className="genre-tile" component={RouterLink} to={`/?genre=${genre._id}`}>
               <Box className="genre-image" sx={{ backgroundImage: `url(${products[index]?.images?.[0]?.url || 'https://placehold.co/160x160?text=Vinyl'})` }} />
               <strong>{genre.name}</strong>
               <small>{genre.count} {genre.count === 1 ? 'title' : 'titles'}</small>

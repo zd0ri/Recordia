@@ -70,7 +70,13 @@ export default function TaxonomyLanding({ type }) {
         <Typography variant="h2">{isArtist ? 'The people behind the music.' : 'The shelves have a language.'}</Typography>
       </Box>
       <Box className={`taxonomy-directory ${isArtist ? 'artist-directory' : 'genre-directory'}`}>
-        {items.map((item) => <Button key={item._id} className={selected === item._id ? 'is-selected' : ''} onClick={() => setSelected(item._id)}>
+        {items.map((item) => <Button
+          key={item._id}
+          className={selected === item._id ? 'is-selected' : ''}
+          component={isArtist ? 'button' : RouterLink}
+          to={isArtist ? undefined : `/?genre=${item._id}`}
+          onClick={isArtist ? () => setSelected(item._id) : undefined}
+        >
           {isArtist
             ? (item.image?.url
               ? <Box component="img" src={item.image.url} alt="" sx={{ borderRadius: '50%', height: 42, objectFit: 'cover', width: 42 }} />
@@ -90,6 +96,7 @@ export default function TaxonomyLanding({ type }) {
                     <Typography className="eyebrow">ARTIST PROFILE</Typography>
                     <Typography variant="h3">{artist.name}</Typography>
                     <Typography>{artist.bio || 'No biography has been added yet.'}</Typography>
+                    <Button component={RouterLink} to={`/?artist=${artist._id}`}>Browse {artist.name} products</Button>
                     {selected === artist._id && <Button onClick={() => setSelected('')}>Show all artists</Button>}
                   </Box>
                 </Box>

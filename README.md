@@ -105,7 +105,7 @@ Do not upload `env.txt` or commit credentials. Set secrets in Vercel's environme
 - Email/password and Google authentication
 - Profile and avatar management
 - Product, artist, genre, user, order, and review administration
-- Database-backed product filters and homepage infinite scrolling
+- Combined genre, artist, and merchandise filters with database-backed autocomplete and homepage infinite scrolling
 - Homepage price and exact-rating sliders
 - Email password-reset links
 - Local cart and server-calculated checkout totals

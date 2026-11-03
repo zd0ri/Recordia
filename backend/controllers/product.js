@@ -169,11 +169,26 @@ exports.getProducts = catchAsync(async (req, res) => {
 });
 
 exports.getProductFilterOptions = catchAsync(async (req, res) => {
-    const [artistIds, genreIds, albums, merchTypes, priceRange] = await Promise.all([
-        Product.distinct('artist'),
-        Product.distinct('genre'),
-        Product.distinct('album_title'),
-        Product.distinct('merch_type'),
+    const genreFilters = {};
+    const artistFilters = {};
+    const merchFilters = {};
+    if (req.query.artist) {
+        genreFilters.artist = req.query.artist;
+        merchFilters.artist = req.query.artist;
+    }
+    if (req.query.genre) {
+        artistFilters.genre = req.query.genre;
+        merchFilters.genre = req.query.genre;
+    }
+    if (req.query.merch_type) {
+        genreFilters.merch_type = req.query.merch_type;
+        artistFilters.merch_type = req.query.merch_type;
+    }
+
+    const [artistIds, genreIds, merchTypes, priceRange] = await Promise.all([
+        Product.distinct('artist', artistFilters),
+        Product.distinct('genre', genreFilters),
+        Product.distinct('merch_type', merchFilters),
         Product.aggregate([
             {
                 $group: {
@@ -184,6 +199,17 @@ exports.getProductFilterOptions = catchAsync(async (req, res) => {
             }
         ])
     ]);
+
+    if (req.query.artist && !artistIds.some((id) => id.toString() === req.query.artist)) {
+        artistIds.push(req.query.artist);
+    }
+    if (req.query.genre && !genreIds.some((id) => id.toString() === req.query.genre)) {
+        genreIds.push(req.query.genre);
+    }
+    if (req.query.merch_type && !merchTypes.includes(req.query.merch_type)) {
+        merchTypes.push(req.query.merch_type);
+    }
+
     const [artists, genres] = await Promise.all([
         Artist.find({ _id: { $in: artistIds } }).select('name').sort({ name: 1 }),
         Genre.find({ _id: { $in: genreIds } }).select('name').sort({ name: 1 })
@@ -193,7 +219,6 @@ exports.getProductFilterOptions = catchAsync(async (req, res) => {
         success: true,
         artists,
         genres,
-        albums: albums.filter(Boolean).sort((a, b) => a.localeCompare(b)),
         merchTypes: merchTypes.filter(Boolean).sort(),
         priceRange: priceRange[0]
             ? [priceRange[0].min, priceRange[0].max]
@@ -220,10 +245,21 @@ exports.getProductSuggestions = catchAsync(async (req, res) => {
     }
 
     const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const [artists, genres] = await Promise.all([
+        Artist.find({ name: { $regex: escapedKeyword, $options: 'i' } }).distinct('_id'),
+        Genre.find({ name: { $regex: escapedKeyword, $options: 'i' } }).distinct('_id')
+    ]);
+    const filters = {};
+    if (req.query.genre) filters.genre = req.query.genre;
+    if (req.query.artist) filters.artist = req.query.artist;
+    if (req.query.merch_type) filters.merch_type = req.query.merch_type;
     const products = await Product.find({
+        ...filters,
         $or: [
             { album_title: { $regex: escapedKeyword, $options: 'i' } },
-            { description: { $regex: escapedKeyword, $options: 'i' } }
+            { description: { $regex: escapedKeyword, $options: 'i' } },
+            { artist: { $in: artists } },
+            { genre: { $in: genres } }
         ]
     })
         .sort({ album_title: 1 })
