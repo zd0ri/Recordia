@@ -1,4 +1,7 @@
 const PDFDocument = require('pdfkit');
+require('pdfkit/standard-fonts/Courier');
+require('pdfkit/standard-fonts/Helvetica');
+require('pdfkit/standard-fonts/HelveticaBold');
 
 const money = (value) => `PHP ${Number(value || 0).toFixed(2)}`;
 const safe = (value) => String(value ?? '');
