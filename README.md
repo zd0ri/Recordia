@@ -71,7 +71,7 @@ For `FIREBASE_PRIVATE_KEY`, keep the escaped newline sequences (`\n`) when placi
 Create `frontend/.env` with:
 
 ```text
-VITE_API_URL=http://localhost:4001/api/v1
+VITE_API_URL=https://recordia-seven.vercel.app/api/v1
 VITE_FIREBASE_API_KEY=
 VITE_FIREBASE_AUTH_DOMAIN=
 VITE_FIREBASE_PROJECT_ID=
@@ -81,6 +81,16 @@ VITE_FIREBASE_APP_ID=
 ```
 
 After changing Vite variables, restart the frontend development server.
+
+## Deploy the backend to Vercel
+
+1. Import the repository into Vercel and set **Root Directory** to `backend`.
+2. Add the backend variables from the environment list above in **Project Settings > Environment Variables**. Use a hosted MongoDB connection string for `DB_URI`; Vercel cannot reach the local MongoDB fallback.
+3. Deploy. Visit `https://<your-backend-deployment>.vercel.app/` to verify the API responds. API routes are under `/api/v1` (for example, `/api/v1/products`).
+4. In the frontend's Vercel project, set `VITE_API_URL` to `https://<your-backend-deployment>.vercel.app/api/v1`, then redeploy the frontend.
+5. Set `FRONTEND_URL` to the deployed frontend URL and allow that URL in Firebase Authentication's authorized domains.
+
+Do not upload `env.txt` or commit credentials. Set secrets in Vercel's environment-variable settings instead.
 
 ## Firebase setup
 
