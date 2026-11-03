@@ -99,7 +99,14 @@ export default function Users() {
       headerName: 'Avatar',
       width: 85,
       sortable: false,
-      renderCell: ({ row }) => <Avatar src={row.avatar?.url} alt={row.name} />,
+      renderCell: ({ row }) => (
+        <Avatar
+          src={row.avatar?.public_id === 'default_avatar' ? '/images/recordia-avatar.svg' : row.avatar?.url}
+          alt={row.name}
+        >
+          R
+        </Avatar>
+      ),
     },
     { field: 'name', headerName: 'Name', flex: 1, minWidth: 150 },
     { field: 'email', headerName: 'Email', flex: 1.3, minWidth: 220 },

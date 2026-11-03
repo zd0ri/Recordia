@@ -127,7 +127,7 @@ export default function Register() {
               <Field as={TextField} name="password" label="Password" type="password" error={touched.password && !!errors.password} helperText={touched.password && errors.password} />
               <Field as={TextField} name="confirmPassword" label="Confirm password" type="password" error={touched.confirmPassword && !!errors.confirmPassword} helperText={touched.confirmPassword && errors.confirmPassword} />
               <Stack alignItems="center" spacing={1}>
-                <Avatar src={preview || undefined} sx={{ height: 88, width: 88 }} />
+                <Avatar src={preview || undefined} sx={{ height: 88, width: 88 }}>R</Avatar>
                 <Button component="label" variant="outlined">
                   Choose avatar
                   <input

@@ -9,7 +9,7 @@ const getFirebaseAuth = require('../utils/firebaseAdmin')
 
 const defaultAvatar = {
     public_id: 'default_avatar',
-    url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/people/smiling-man.jpg'
+    url: '/images/recordia-avatar.svg'
 };
 
 const sanitizeUser = (user) => {

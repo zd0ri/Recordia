@@ -22,7 +22,10 @@ const profileSchema = Yup.object({
 export default function Profile() {
   const { user, updateProfile, changePassword } = useAuth();
   const [selectedPreview, setSelectedPreview] = useState('');
-  const preview = selectedPreview || user?.avatar?.url || '';
+  const savedAvatar = user?.avatar?.public_id === 'default_avatar'
+    ? '/images/recordia-avatar.svg'
+    : user?.avatar?.url;
+  const preview = selectedPreview || savedAvatar || '';
   const [profileMessage, setProfileMessage] = useState('');
   const [passwordMessage, setPasswordMessage] = useState('');
   const hasPassword = user?.hasPassword !== false;
@@ -90,7 +93,7 @@ export default function Profile() {
             <Form>
               <Stack className="profile-form" spacing={2}>
                 <Stack className="profile-avatar-editor" alignItems="center" spacing={1}>
-                  <Avatar src={preview || undefined} sx={{ height: 104, width: 104 }} />
+                  <Avatar src={preview || undefined} sx={{ height: 104, width: 104 }}>R</Avatar>
                   <Typography className="account-panel-kicker">THE LISTENER</Typography>
                   <Button className="account-outline-button" component="label" variant="outlined">
                     Change avatar
