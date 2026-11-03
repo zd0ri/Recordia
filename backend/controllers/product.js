@@ -185,7 +185,7 @@ exports.getProductFilterOptions = catchAsync(async (req, res) => {
         artistFilters.merch_type = req.query.merch_type;
     }
 
-    const [artistIds, genreIds, merchTypes, priceRange] = await Promise.all([
+    let [artistIds, genreIds, merchTypes, priceRange] = await Promise.all([
         Product.distinct('artist', artistFilters),
         Product.distinct('genre', genreFilters),
         Product.distinct('merch_type', merchFilters),
@@ -199,6 +199,10 @@ exports.getProductFilterOptions = catchAsync(async (req, res) => {
             }
         ])
     ]);
+
+    artistIds = artistIds.filter(Boolean);
+    genreIds = genreIds.filter(Boolean);
+    merchTypes = merchTypes.filter(Boolean);
 
     if (req.query.artist && !artistIds.some((id) => id.toString() === req.query.artist)) {
         artistIds.push(req.query.artist);
