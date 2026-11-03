@@ -30,8 +30,8 @@ export default function Home() {
     keyword: searchParams.get('keyword') || '',
     genre: searchParams.get('genre') || '',
     artist: searchParams.get('artist') || '',
-    rating: searchParams.has('ratings[gte]')
-      ? String(Math.round(Number(searchParams.get('ratings[gte]'))))
+    rating: searchParams.has('ratings[eq]')
+      ? String(Math.round(Number(searchParams.get('ratings[eq]'))))
       : '',
     reviewCount: searchParams.get('reviews[gte]') || '',
     price: [
@@ -67,7 +67,7 @@ export default function Home() {
           ...(filters.artist && { artist: filters.artist }),
           ...(searchParams.get('album') && { album: searchParams.get('album') }),
           ...(searchParams.get('merch_type') && { merch_type: searchParams.get('merch_type') }),
-          ...(filters.rating && { 'ratings[gte]': filters.rating }),
+          ...(filters.rating && { 'ratings[eq]': filters.rating }),
           ...(filters.reviewCount && { 'reviews[gte]': filters.reviewCount }),
           ...(filters.price[0] > priceBounds[0] && { 'price[gte]': filters.price[0] }),
           ...(filters.price[1] < priceBounds[1] && { 'price[lte]': filters.price[1] }),
@@ -149,8 +149,8 @@ export default function Home() {
 
   const updateFilter = (name, value) => {
     const next = new URLSearchParams(searchParams);
-    if (value) next.set(name === 'rating' ? 'ratings[gte]' : name === 'reviewCount' ? 'reviews[gte]' : name, value);
-    else next.delete(name === 'rating' ? 'ratings[gte]' : name === 'reviewCount' ? 'reviews[gte]' : name);
+    if (value) next.set(name === 'rating' ? 'ratings[eq]' : name === 'reviewCount' ? 'reviews[gte]' : name, value);
+    else next.delete(name === 'rating' ? 'ratings[eq]' : name === 'reviewCount' ? 'reviews[gte]' : name);
     setSearchParams(next);
   };
 
@@ -275,10 +275,10 @@ export default function Home() {
             />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <Typography gutterBottom>Minimum rating: {Number(filters.rating || 0)} stars</Typography>
+            <Typography gutterBottom>{filters.rating ? `Rating: ${filters.rating} stars` : 'Any rating'}</Typography>
             <Slider
               key={`rating-${filterKey}`}
-              aria-label="Minimum rating"
+              aria-label="Exact rating"
               min={0}
               max={5}
               step={1}

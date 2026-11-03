@@ -25,7 +25,7 @@ implementation was found.
 
 - [x] ✅ Implemented — Price range filter (5 pts).
 - [x] ✅ Implemented — Category/genre filter (5 pts).
-- [x] ✅ Implemented — Minimum ratings filter (5 pts).
+- [x] ✅ Implemented — Exact average ratings filter (5 pts).
 - [x] ✅ Implemented — Review filters by minimum review count on the homepage and by content,
   product, user, and rating in admin review management (5 pts).
 - **Current status: 20/20 pts implemented; perform a live filter test.**

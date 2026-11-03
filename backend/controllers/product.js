@@ -111,8 +111,8 @@ exports.getProducts = catchAsync(async (req, res) => {
         .filter();
     const filters = apiFeatures.getFilters();
     const reviewCriteria = {};
-    if (req.query['ratings[gte]'] !== undefined) {
-        reviewCriteria.rating = { $gte: Number(req.query['ratings[gte]']) };
+    if (req.query['ratings[eq]'] !== undefined) {
+        reviewCriteria.rating = { $eq: Number(req.query['ratings[eq]']) };
     }
     if (req.query['reviews[gte]'] !== undefined) {
         reviewCriteria.count = { $gte: Number(req.query['reviews[gte]']) };
