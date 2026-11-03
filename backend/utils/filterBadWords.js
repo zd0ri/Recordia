@@ -1,3 +1,5 @@
+const { Filter } = require('bad-words');
+
 const customWords = [
     'gagi', 'gago', 'gaga', 'tangina', 'putangina', 'puta', 'pucha',
     'pakshet', 'punyeta', 'kupal', 'ulol', 'bobo', 'tanga', 'tarantado',
@@ -23,6 +25,9 @@ const customPhrases = [
     'bitch ka', 'asshole mo', 'damn ka', 'wala kang utak',
     'wala kang kwenta', 'basura ka', 'peste ka'
 ];
+const profanityFilter = new Filter();
+profanityFilter.addWords(...customWords);
+
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const phrasePatterns = customPhrases.map((phrase) => new RegExp(
     `(^|[^a-z0-9])${phrase.split(/([\s-]+)/).map((part) => (
@@ -36,7 +41,6 @@ const phrasePatterns = customPhrases.map((phrase) => new RegExp(
 module.exports = (comment) => {
     let cleaned = String(comment || '');
 
-    // Filter custom phrases
     phrasePatterns.forEach((pattern) => {
         cleaned = cleaned.replace(
             pattern,
@@ -44,15 +48,5 @@ module.exports = (comment) => {
         );
     });
 
-    // Filter individual bad words
-    customWords.forEach((word) => {
-        const pattern = new RegExp(
-            `\\b${escapeRegex(word)}\\b`,
-            'gi'
-        );
-
-        cleaned = cleaned.replace(pattern, (match) => '*'.repeat(match.length));
-    });
-
-    return cleaned.replace(/\*+/g, '***');
+    return profanityFilter.clean(cleaned).replace(/\*+/g, '***');
 };
