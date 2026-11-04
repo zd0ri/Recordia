@@ -66,6 +66,25 @@ FRONTEND_URL=http://localhost:5173
 
 For `FIREBASE_PRIVATE_KEY`, keep the escaped newline sequences (`\n`) when placing the service-account key in an environment file. Never commit real credentials. Rotate database, Cloudinary, JWT, Firebase, and SMTP credentials if they have been shared or committed.
 
+## Seed sample catalog data
+
+The backend seeder inserts sample artists, genres, and products that are useful
+for trying the catalog, search, and filters. It does not create user accounts
+or orders, delete records, or overwrite matching records.
+
+1. Make sure `backend/env.txt` has `DB_URI` set to the database you intend to
+   seed. When run locally with `DB_URI` unset, the script uses
+   `mongodb://127.0.0.1:27017/ecommerce`. Avoid pointing it at a production
+   database unless you intentionally want these sample records there.
+2. From PowerShell, run:
+
+   ```powershell
+   cd backend
+   npm run seed
+   ```
+
+The script can be run again safely; matching sample records are left unchanged.
+
 ## Frontend environment
 
 Create `frontend/.env` with:
