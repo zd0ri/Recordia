@@ -34,7 +34,7 @@ const createOrderEmail = (order) => {
             </table>
             <div style="border-top:2px solid #542d2d;padding-top:14px;font:13px Courier New,monospace;">
               <p style="margin:7px 0;">Items total: <strong style="float:right;">${money(order.itemsPrice)}</strong></p>
-              <p style="margin:7px 0;">Tax: <strong style="float:right;">${money(order.taxPrice)}</strong></p>
+              ${Number(order.discountPrice || 0) > 0 ? `<p style="margin:7px 0;">Discount${order.discountCode ? ` (${escapeHtml(order.discountCode)})` : ''}: <strong style="float:right;">-${money(order.discountPrice)}</strong></p>` : ''}
               <p style="margin:7px 0;">Shipping: <strong style="float:right;">${money(order.shippingPrice)}</strong></p>
               <p style="margin:16px 0 0;border-top:2px dashed #d69a2d;padding-top:14px;font-size:18px;color:#9a4c2f;">TOTAL <strong style="float:right;">${money(order.totalPrice)}</strong></p>
             </div>

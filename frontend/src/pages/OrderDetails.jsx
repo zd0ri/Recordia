@@ -53,7 +53,7 @@ export default function OrderDetails() {
           </Box>
           <Box className="order-detail-totals">
             <Typography><span>Items</span><strong>₱{Number(order.itemsPrice).toFixed(2)}</strong></Typography>
-            <Typography><span>Tax</span><strong>₱{Number(order.taxPrice).toFixed(2)}</strong></Typography>
+            {Number(order.discountPrice) > 0 && <Typography><span>Discount{order.discountCode ? ` (${order.discountCode})` : ''}</span><strong>-₱{Number(order.discountPrice).toFixed(2)}</strong></Typography>}
             <Typography><span>Shipping</span><strong>₱{Number(order.shippingPrice || 0).toFixed(2)}</strong></Typography>
             <Divider />
             <Typography className="order-grand-total"><span>Total</span><strong>₱{Number(order.totalPrice).toFixed(2)}</strong></Typography>

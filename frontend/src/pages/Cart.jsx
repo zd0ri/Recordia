@@ -1,5 +1,5 @@
 import {
-  Alert, Box, Button, Divider, IconButton, MenuItem, Paper, Select, Stack, Typography,
+  Alert, Box, Button, Divider, IconButton, Paper, Stack, Typography,
   Checkbox,
 } from '@mui/material';
 import { useState } from 'react';
@@ -22,7 +22,10 @@ export default function Cart() {
   const activeSelectedIds = selectedIds.filter((id) => items.some((item) => item.product === id));
   const selectedItems = items.filter((item) => activeSelectedIds.includes(item.product));
   const selectedPrice = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = Number((selectedPrice * 0.12).toFixed(2));
+  const discountRates = { '20SBESTHIT': 0.20, ELV15: 0.05, '2NDNATVR3': 0.10 };
+  const [appliedDiscountCode, setAppliedDiscountCode] = useState('');
+  const discountRate = discountRates[appliedDiscountCode] || 0;
+  const discount = Number((selectedPrice * discountRate).toFixed(2));
   const allSelected = items.length > 0 && activeSelectedIds.length === items.length;
 
   const toggleSelected = (productId) => {
@@ -35,10 +38,19 @@ export default function Cart() {
 
   const applyDiscountCode = (event) => {
     event.preventDefault();
-    const code = discountCode.trim();
-    setDiscountError(code
-      ? `Discount code "${code}" doesn't exist.`
-      : 'Enter a discount code to apply.');
+    const code = discountCode.trim().toUpperCase();
+    if (!code) {
+      setAppliedDiscountCode('');
+      setDiscountError('Enter a discount code to apply.');
+      return;
+    }
+    if (!discountRates[code]) {
+      setAppliedDiscountCode('');
+      setDiscountError(`Discount code "${code}" doesn't exist.`);
+      return;
+    }
+    setAppliedDiscountCode(code);
+    setDiscountError('');
   };
 
   if (!items.length) {
@@ -69,9 +81,23 @@ export default function Cart() {
                   <Box><Typography className="retro-item-name">{item.name}</Typography><Typography className="retro-item-artist">Recordia shelf</Typography></Box>
                 </Box>
                 <Typography className="retro-item-price">₱{Number(item.price).toFixed(2)}</Typography>
-                <Select className="retro-quantity" size="small" value={item.quantity} onChange={(event) => changeQuantity(item.product, event.target.value)} aria-label={`Quantity for ${item.name}`}>
-                  {Array.from({ length: item.stocks }, (_, index) => <MenuItem key={index + 1} value={index + 1}>{index + 1}</MenuItem>)}
-                </Select>
+                <Stack className="retro-cart-quantity-stepper" alignItems="center" direction="row">
+                  <IconButton
+                    aria-label={`Decrease quantity for ${item.name}`}
+                    disabled={item.quantity <= 1}
+                    onClick={() => changeQuantity(item.product, item.quantity - 1)}
+                  >
+                    −
+                  </IconButton>
+                  <Typography aria-live="polite">{item.quantity}</Typography>
+                  <IconButton
+                    aria-label={`Increase quantity for ${item.name}`}
+                    disabled={item.quantity >= item.stocks}
+                    onClick={() => changeQuantity(item.product, item.quantity + 1)}
+                  >
+                    +
+                  </IconButton>
+                </Stack>
                 <Typography className="retro-item-subtotal">₱{(item.price * item.quantity).toFixed(2)}</Typography>
                 <IconButton className="retro-remove" aria-label={`Remove ${item.name}`} onClick={() => removeFromCart(item.product)}><DeleteOutlineIcon /></IconButton>
               </Box>
@@ -98,10 +124,10 @@ export default function Cart() {
           <Stack className="retro-summary-lines" spacing={1.5}>
             <Typography><span>Selected records</span><strong>{selectedItems.length}</strong></Typography>
             <Typography><span>Subtotal</span><strong>₱{selectedPrice.toFixed(2)}</strong></Typography>
-            <Typography><span>Tax</span><strong>₱{tax.toFixed(2)}</strong></Typography>
-            <Typography className="retro-total"><span>Total</span><strong>₱{(selectedPrice + tax).toFixed(2)}</strong></Typography>
+            {discount > 0 && <Typography><span>Discount ({appliedDiscountCode})</span><strong>-₱{discount.toFixed(2)}</strong></Typography>}
+            <Typography className="retro-total"><span>Total</span><strong>₱{(selectedPrice - discount).toFixed(2)}</strong></Typography>
           </Stack>
-          <Button className="retro-primary-button" disabled={!selectedItems.length} startIcon={<ShoppingBagOutlinedIcon />} variant="contained" onClick={() => navigate('/checkout', { state: { productIds: activeSelectedIds } })}>Checkout selected</Button>
+          <Button className="retro-primary-button" disabled={!selectedItems.length} startIcon={<ShoppingBagOutlinedIcon />} variant="contained" onClick={() => navigate('/checkout', { state: { productIds: activeSelectedIds, discountCode: appliedDiscountCode } })}>Checkout selected</Button>
           <Box className="retro-trust-note"><CheckCircleOutlineIcon /> Carefully packed and checked before dispatch.</Box>
           <Box className="retro-trust-chip"><LockOutlinedIcon /> Secure checkout</Box>
           <Box className="retro-trust-chip"><LocalShippingOutlinedIcon /> Insured shipping</Box>
