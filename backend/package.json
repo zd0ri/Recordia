@@ -32,7 +32,6 @@
     "validator": "^13.15.35"
   },
   "overrides": {
-  "badwords-list": "1.0.0",
   "jwks-rsa": {
     "jose": "4.15.9"
   }
